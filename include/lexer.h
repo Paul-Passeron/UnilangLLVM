@@ -54,6 +54,10 @@ typedef struct lexer_t {
   lexer_rules_t rules;
 } lexer_t;
 
+typedef enum token_kind_t {
+  DIR_INCLUDE,
+
+} token_kind_t;
 void print_location_t(FILE *f, location_t loc);
 
 void add_rule_to_lexer(lexer_t *l, string_view_t regexp, int value);
@@ -72,5 +76,11 @@ token_t next(lexer_t *l);
 void print_error(FILE *f, lexer_t *l, string_view_t error_message);
 
 string_view_t location_to_sv(location_t loc);
+
 lexer_rules_t new_rules(void);
+
+lexer_t new_unilang_lexer();
+
+bool is_error_tok(token_t tok);
+
 #endif // LEXER_H

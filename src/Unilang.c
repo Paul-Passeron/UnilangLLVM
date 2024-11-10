@@ -7,15 +7,25 @@
 
 #include "../include/lexer.h"
 #include "../include/string_view.h"
+#include <stdlib.h>
 
 int main(void) {
-  string_view_t s = SV("@include \"io.ul\"\nlet main(): void => "
-                       "{\n\tprintln(\"Hello, World !\");\n}\n");
-  lexer_t l = {{"hello_world.ul", 1, 1, false}, s, new_rules()};
+  char input[] = "@include \"io.ul\"\nlet main(): void => "
+                 "{\n\tprintln(\"Hello, World !\");\n}\n";
+  string_view_t s = SV(input);
+  printf("INPUT IS \n" SF, SA(s));
+  //   lexer_t l = {{"hello_world.ul", 1, 1, false}, s, new_rules()};
+  lexer_t l = new_unilang_lexer();
+  l.remaining = s;
+  l.current_loc = (location_t){"hello_world.ul", 1, 1, false};
 
-  add_bad_rule_to_lexer(&l, SV("*"), SV("Everything must burn"));
+  while (!is_next(&l)) {
+    token_t tok = next(&l);
+    if (is_error_tok(tok))
+      break;
+    printf("Token lexeme is " SF "\n", SA(tok.lexeme));
+  }
 
-  token_t tok = next(&l);
-  (void)tok;
+  free(l.rules.data);
   return 0;
 }

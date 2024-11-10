@@ -33,9 +33,11 @@ bool sv_matches_exact(string_view_t pattern, string_view_t string,
   char *str = sv_to_cstr(string);
   char *r;
   bool res = matches_exact(pat, str, &r);
+  int l = strlen(r);
+  *rest = (string_view_t){malloc(l), l};
+  memcpy(rest->contents, r, l);
   free(pat);
   free(str);
-  *rest = (string_view_t){.contents = r, .length = strlen(r)};
   return res;
 }
 

@@ -73,7 +73,6 @@ void lexer_skip(lexer_t *l) {
   while (true) {
     if (is_done(l))
       break;
-    bool could_skip = false;
     for (size_t i = 0; i < l->rules.count; i++) {
       lexer_rule_t rule = l->rules.data[i];
       if (rule.kind != SKIP)
@@ -82,12 +81,10 @@ void lexer_skip(lexer_t *l) {
       if (sv_matches_exact(rule.regexp, l->remaining, &nr)) {
         update_pos(l, l->remaining.length - nr.length);
         l->remaining = nr;
-        could_skip = true;
         break;
       }
     }
-    if (!could_skip)
-      break;
+    break;
   }
 }
 
@@ -133,6 +130,7 @@ void print_error(FILE *f, lexer_t *l, string_view_t error_message) {
 token_t error_token() { return (token_t){{0}, {0}, -1}; }
 
 token_t next(lexer_t *l) {
+
   lexer_skip(l);
   location_t tmp = l->current_loc;
   for (size_t i = 0; i < l->rules.count; i++) {
@@ -146,12 +144,14 @@ token_t next(lexer_t *l) {
     int len = l->remaining.length - sv.length;
     token_t tok = {tmp, {l->remaining.contents, len}, rule.as.good};
     update_pos(l, len);
+    l->remaining = sv;
     return tok;
   }
   for (size_t i = 0; i < l->rules.size; i++) {
     lexer_rule_t rule = l->rules.data[i];
     if (rule.kind != BAD)
       continue;
+    printf("Here\n");
     string_view_t sv;
     bool res = sv_matches_exact(rule.regexp, l->remaining, &sv);
     if (!res)
@@ -159,6 +159,7 @@ token_t next(lexer_t *l) {
     print_error(stderr, l, rule.as.error);
     return error_token();
   }
+
   print_error(stderr, l, SV("[Syntax Error] No rule matching"));
   return error_token();
 }
@@ -166,3 +167,18 @@ token_t next(lexer_t *l) {
 lexer_rules_t new_rules(void) {
   return (lexer_rules_t){malloc(16 * sizeof(lexer_rule_t)), 0, 16};
 }
+
+lexer_t new_unilang_lexer() {
+  lexer_t l = {0};
+  l.rules = new_rules();
+  add_rule_to_lexer(&l, SV("@include"), DIR_INCLUDE);
+  add_skip_rule_to_lexer(&l, SV(" "));
+  add_skip_rule_to_lexer(&l, SV("\n"));
+  add_skip_rule_to_lexer(&l, SV("\t"));
+  add_skip_rule_to_lexer(&l, SV("\b"));
+  add_skip_rule_to_lexer(&l, SV("/\\**\\*/"));
+  add_bad_rule_to_lexer(&l, SV("/\\*"), SV("Unmatched multi-line comment."));
+  return l;
+}
+
+bool is_error_tok(token_t tok) { return tok.kind < 0; }
