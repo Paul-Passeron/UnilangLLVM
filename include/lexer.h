@@ -22,6 +22,7 @@ typedef struct location_t {
 typedef struct token_t {
   location_t location;
   string_view_t lexeme;
+  int kind;
 } token_t;
 
 typedef enum lexer_rule_kind_t {
@@ -36,6 +37,7 @@ typedef union lexer_rule_as_t {
 } lexer_rule_as_t;
 
 typedef struct lexer_rule_t {
+  string_view_t regexp;
   lexer_rule_kind_t kind;
   lexer_rule_as_t as;
 } lexer_rule_t;
@@ -54,4 +56,21 @@ typedef struct lexer_t {
 
 void print_location_t(FILE *f, location_t loc);
 
+void add_rule_to_lexer(lexer_t *l, string_view_t regexp, int value);
+
+void add_bad_rule_to_lexer(lexer_t *l, string_view_t regexp,
+                           string_view_t error);
+
+void add_skip_rule_to_lexer(lexer_t *l, string_view_t regexp);
+
+bool is_done(lexer_t *l);
+
+bool is_next(lexer_t *l);
+
+token_t next(lexer_t *l);
+
+void print_error(FILE *f, lexer_t *l, string_view_t error_message);
+
+string_view_t location_to_sv(location_t loc);
+lexer_rules_t new_rules(void);
 #endif // LEXER_H

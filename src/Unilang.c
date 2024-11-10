@@ -5,13 +5,17 @@
  * Paul Passeron <paul.passeron2@gmail.com>
  */
 
+#include "../include/lexer.h"
+#include "../include/string_view.h"
 
-#include <stdio.h>
+int main(void) {
+  string_view_t s = SV("@include \"io.ul\"\nlet main(): void => "
+                       "{\n\tprintln(\"Hello, World !\");\n}\n");
+  lexer_t l = {{"hello_world.ul", 1, 1, false}, s, new_rules()};
 
+  add_bad_rule_to_lexer(&l, SV("*"), SV("Everything must burn"));
 
-int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
-    printf("Hello, World !\n");
-    return 0;
+  token_t tok = next(&l);
+  (void)tok;
+  return 0;
 }

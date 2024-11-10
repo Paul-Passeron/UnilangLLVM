@@ -5,7 +5,7 @@ SRC=src/
 BUILD=build/
 BIN=bin/
 
-DEPS=  $(BUILD)Unilang.o $(BUILD)lexer.o $(BUILD)string_view.o
+DEPS=  $(BUILD)Unilang.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o
 all: init lines Unilang
 lines:
 	@echo "C:"
