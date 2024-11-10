@@ -11,7 +11,7 @@
 
 int main(void) {
   char input[] = "@include \"io.ul\"\nlet main(): void => "
-                 "{\n\tprintln(\"Hello, World !\");\n}\n";
+                 "{\n    println(\"Hello, World !\");\n}\n";
   string_view_t s = SV(input);
   printf("INPUT IS \n" SF, SA(s));
   //   lexer_t l = {{"hello_world.ul", 1, 1, false}, s, new_rules()};
