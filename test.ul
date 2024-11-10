@@ -1,0 +1,4 @@
+@include "io.ul"
+let main(): void => {
+  println("Hello, World !"); 
+}

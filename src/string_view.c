@@ -29,15 +29,16 @@ char *sv_to_cstr(string_view_t s) {
 
 bool sv_matches_exact(string_view_t pattern, string_view_t string,
                       string_view_t *rest) {
-  char *pat = sv_to_cstr(pattern);
-  char *str = sv_to_cstr(string);
+
+  char pat[1024] = {0};
+  memcpy(pat, pattern.contents, pattern.length);
+  char str[1024] = {0};
+  memcpy(str, string.contents, string.length);
   char *r;
   bool res = matches_exact(pat, str, &r);
   int l = strlen(r);
-  *rest = (string_view_t){malloc(l), l};
+  *rest = (string_view_t){string.contents + (r - str), l};
   memcpy(rest->contents, r, l);
-  free(pat);
-  free(str);
   return res;
 }
 
@@ -47,4 +48,15 @@ int length_until(string_view_t s, char c) {
       return i;
   }
   return -1;
+}
+
+string_view_t from_file(FILE *f) {
+  long current = ftell(f);
+  fseek(f, 0, SEEK_END);
+  long size = ftell(f);
+  fseek(f, 0, SEEK_SET);
+  char *str = malloc(size + 1);
+  fread(str, 1, size, f);
+  fseek(f, current, SEEK_SET);
+  return (string_view_t){str, size};
 }

@@ -164,6 +164,10 @@ void regexp(const char *pattern, const char *string, bool *pattern_finished,
           *string_matched += string_match + j;
           return;
         }
+        if (!*(string + j + 1)) {
+          *pattern_finished = false;
+          return;
+        }
       }
     } else if (c == '[') {
       bool found = false;
@@ -211,7 +215,6 @@ void regexp(const char *pattern, const char *string, bool *pattern_finished,
             *pattern_finished = true;
           }
         }
-        // pattern++;
       } while (*pattern && *pattern != ']');
       if (!found) {
         return;

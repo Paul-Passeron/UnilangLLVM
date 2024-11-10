@@ -12,6 +12,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
 typedef struct string_view_t {
   char *contents;
@@ -35,5 +36,7 @@ bool sv_matches_exact(string_view_t pattern, string_view_t string,
                       string_view_t *rest);
 
 int length_until(string_view_t s, char c);
+
+string_view_t from_file(FILE *f);
 
 #endif // STRING_VIEW_H

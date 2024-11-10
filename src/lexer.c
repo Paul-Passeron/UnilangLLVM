@@ -6,7 +6,6 @@
  */
 
 #include "../include/lexer.h"
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -133,33 +132,30 @@ void print_error(FILE *f, lexer_t *l, string_view_t error_message) {
 token_t error_token() { return (token_t){{0}, {0}, -1}; }
 
 token_t next(lexer_t *l) {
-
   lexer_skip(l);
   location_t tmp = l->current_loc;
   for (size_t i = 0; i < l->rules.count; i++) {
     lexer_rule_t rule = l->rules.data[i];
-    if (rule.kind != GOOD)
+    if (rule.kind == SKIP)
       continue;
     string_view_t sv;
     bool res = sv_matches_exact(rule.regexp, l->remaining, &sv);
     if (!res)
       continue;
-    int len = l->remaining.length - sv.length;
-    token_t tok = {tmp, {l->remaining.contents, len}, rule.as.good};
-    update_pos(l, len);
-    l->remaining = sv;
-    return tok;
+    if (rule.kind == GOOD) {
+      int len = l->remaining.length - sv.length;
+      token_t tok = {tmp, {l->remaining.contents, len}, rule.as.good};
+      update_pos(l, len);
+      l->remaining = sv;
+      return tok;
+    }
+    print_error(stderr, l, rule.as.error);
+    return error_token();
   }
   for (size_t i = 0; i < l->rules.size; i++) {
     lexer_rule_t rule = l->rules.data[i];
     if (rule.kind != BAD)
       continue;
-    string_view_t sv;
-    bool res = sv_matches_exact(rule.regexp, l->remaining, &sv);
-    if (!res)
-      continue;
-    print_error(stderr, l, rule.as.error);
-    return error_token();
   }
 
   print_error(stderr, l, SV("[Syntax Error] No rule matching"));
@@ -176,7 +172,6 @@ lexer_rules_t new_rules(void) {
 lexer_t new_unilang_lexer() {
   lexer_t l = {0};
   l.rules = new_rules();
-  add_rule_to_lexer(&l, SV("\"*\""), STRLIT);
   add_rule_to_lexer(&l, SV("let"), KEY_LET);
   add_rule_to_lexer(&l, SV("let"), KEY_LET);
   add_rule_to_lexer(&l, SV("if"), KEY_IF);
@@ -187,6 +182,13 @@ lexer_t new_unilang_lexer() {
   add_rule_to_lexer(&l, SV("defer"), KEY_DEFER);
   add_rule_to_lexer(&l, SV("sum"), KEY_SUM);
   add_rule_to_lexer(&l, SV("class"), KEY_CLASS);
+  add_rule_to_lexer(&l, SV("\'\\\\000\'"), CHARLIT);
+  add_rule_to_lexer(&l, SV("\'\\\\?\'"), CHARLIT);
+  add_rule_to_lexer(&l, SV("\'?\'"), CHARLIT);
+  add_rule_to_lexer(&l, SV("\"*\""), STRLIT);
+  add_bad_rule_to_lexer(&l, SV("/\\*"), SV("Unmatched multi-line comment."));
+  add_bad_rule_to_lexer(&l, SV("\""), SV("Unmatched string literal start."));
+  add_bad_rule_to_lexer(&l, SV("\'"), SV("Unmatched char literal start."));
   add_rule_to_lexer(&l, SV("@[a-zA-Z_-_]([a-zA-Z_-_0-9])"), DIRECTIVE);
   add_rule_to_lexer(&l, SV("\\*"), MULT);
   add_rule_to_lexer(&l, SV("+"), PLUS);
@@ -216,9 +218,6 @@ lexer_t new_unilang_lexer() {
   add_rule_to_lexer(&l, SV("}"), CLOSE_BRA);
   add_rule_to_lexer(&l, SV("."), DOT);
   add_rule_to_lexer(&l, SV("->"), SMALL_ARR);
-  add_rule_to_lexer(&l, SV("\'\\\\000\'"), CHARLIT);
-  add_rule_to_lexer(&l, SV("\'\\\\?\'"), CHARLIT);
-  add_rule_to_lexer(&l, SV("\'?\'"), CHARLIT);
   add_rule_to_lexer(&l, SV("0b[0-1]([0-1])"), INTLIT);
   add_rule_to_lexer(&l, SV("0x[0-9a-fA-F]([0-9a-fA-F])"), INTLIT);
   add_rule_to_lexer(&l, SV("[0-9]([0-9]).[0-9]([0-9])f"), FLOATLIT);
@@ -233,9 +232,7 @@ lexer_t new_unilang_lexer() {
   add_skip_rule_to_lexer(&l, SV("\t"));
   add_skip_rule_to_lexer(&l, SV("\b"));
   add_skip_rule_to_lexer(&l, SV("/\\**\\*/"));
-  add_bad_rule_to_lexer(&l, SV("/\\*"), SV("Unmatched multi-line comment."));
-  add_bad_rule_to_lexer(&l, SV("\"*"), SV("Unmatched string literal start."));
-  add_bad_rule_to_lexer(&l, SV("\'*"), SV("Unmatched char literal start."));
+
   return l;
 }
 
