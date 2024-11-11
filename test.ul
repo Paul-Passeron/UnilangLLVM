@@ -1,4 +1,45 @@
-@include "io.ul"
+@include "sys.ul"
+
+let STDIN: int => 0;
+let STDOUT: int => 1;
+
+let SYS_WRITE: int => 4;
+
+let strlen(s: char *): int => {
+    let i: int = 0;
+    while s[i] => i => i+1;
+    return i;
+}
+
+class string => {
+    public contents: char *,
+    public length: int,
+
+    public let string(c: char*, l: int) => {
+        self::contents => c;
+        self::length => l;
+    },
+
+    @implicit
+    public let string(c_str: char *) => {
+        self::contents => c_str;
+        self::length => strlen(c_str);
+    }
+}
+
+let write(fd: int, ptr: char*, len: int): int => {
+    return syscall(SYS_WRITE, fd, ptr, len);
+}
+
+let print(s: string): void => {
+    write(STDOUT, s::contents, s::length);
+}
+
+let println(s: string): void => {
+    print(s);
+    print("\n");
+}
+
 let main(): void => {
-  println("Hello, World !"); 
+    println("Hello, World !");
 }

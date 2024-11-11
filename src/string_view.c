@@ -60,3 +60,9 @@ string_view_t from_file(FILE *f) {
   fseek(f, current, SEEK_SET);
   return (string_view_t){str, size};
 }
+
+bool sv_eq(string_view_t a, string_view_t b) {
+  if (a.length != b.length)
+    return false;
+  return !memcmp(a.contents, b.contents, a.length);
+}

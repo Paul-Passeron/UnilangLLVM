@@ -39,4 +39,6 @@ int length_until(string_view_t s, char c);
 
 string_view_t from_file(FILE *f);
 
+bool sv_eq(string_view_t a, string_view_t b);
+
 #endif // STRING_VIEW_H

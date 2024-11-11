@@ -52,6 +52,7 @@ typedef struct lexer_t {
   location_t current_loc;
   string_view_t remaining;
   lexer_rules_t rules;
+  size_t eaten;
 } lexer_t;
 
 typedef enum token_kind_t {
@@ -121,8 +122,6 @@ void print_error(FILE *f, lexer_t *l, string_view_t error_message);
 string_view_t location_to_sv(location_t loc);
 
 lexer_rules_t new_rules(void);
-
-lexer_t new_unilang_lexer();
 
 bool is_error_tok(token_t tok);
 
