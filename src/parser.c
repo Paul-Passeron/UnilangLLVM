@@ -6,7 +6,6 @@
  */
 
 #include "../include/parser.h"
-#include "../include/defs.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -95,5 +94,3 @@ void *choice_rule(lexer_t *l, parser_t self) {
   free(best_parser);
   return NULL;
 }
-
-// File created by the new_file tool !

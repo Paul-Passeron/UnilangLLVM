@@ -5,8 +5,6 @@
  * Paul Passeron <paul.passeron2@gmail.com>
  */
 
-// File created by the new_file tool !
-
 #ifndef REGEXP_H
 #define REGEXP_H
 

@@ -10,13 +10,57 @@
 #include "../include/unilang_parser.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-int main(void) {
-  const char fn[] = "test.ul";
+void usage(const char *str) {
+  printf("Usage: %s [options] <input file>\n", str);
+}
 
+int main(int argc, char **argv) {
+  for (int i = 0; i < argc; i++) {
+    printf("%s ", argv[i]);
+  }
+  printf("\n");
+  if (argc < 2) {
+    usage(argv[0]);
+    return 1;
+  }
+  char *fn = NULL;
+  char *out = NULL;
+  for (int i = 1; i < argc; i++) {
+    if (argv[i][0] == '-') {
+      if (strcmp(argv[i], "-o") == 0) {
+        i++;
+        if (i == argc) {
+          printf("Expected file name after \'-o\' flag.\n");
+          usage(argv[0]);
+          return 3;
+        }
+        printf("TODO: output to \'%s\'", argv[i]);
+        out = argv[i];
+      }
+    } else if (fn == NULL) {
+      fn = argv[i];
+    } else {
+      printf("Can only compile one file at a time for the moment");
+      usage(argv[0]);
+      return 4;
+    }
+  }
+
+  if (fn == NULL) {
+    printf("Expected input file\n");
+    usage(argv[0]);
+    return 2;
+  }
+
+  if (out == NULL) {
+    out = "a.out";
+  }
   FILE *f = fopen(fn, "r");
   if (!f) {
-    printf("Error opening file\n");
+    printf("Error opening file \'%s\': ", fn);
+    perror("");
   }
   string_view_t s = from_file(f);
   fclose(f);

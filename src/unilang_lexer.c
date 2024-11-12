@@ -73,5 +73,3 @@ lexer_t new_unilang_lexer() {
 
   return l;
 }
-
-// File created by the new_file tool !

@@ -5,8 +5,6 @@
  * Paul Passeron <paul.passeron2@gmail.com>
  */
 
-// File created by the new_file tool !
-
 #ifndef PARSER_H
 #define PARSER_H
 

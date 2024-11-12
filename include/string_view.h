@@ -5,8 +5,6 @@
  * Paul Passeron <paul.passeron2@gmail.com>
  */
 
-// File created by the new_file tool !
-
 #ifndef STRING_VIEW_H
 #define STRING_VIEW_H
 

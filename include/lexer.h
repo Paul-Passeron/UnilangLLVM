@@ -125,4 +125,6 @@ lexer_rules_t new_rules(void);
 
 bool is_error_tok(token_t tok);
 
+token_t error_token(void);
+
 #endif // LEXER_H
