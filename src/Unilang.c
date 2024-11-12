@@ -16,11 +16,16 @@ void usage(const char *str) {
   printf("Usage: %s [options] <input file>\n", str);
 }
 
-int main(int argc, char **argv) {
+void print_cmd(int argc, char **argv) {
+  printf("[CMD] ");
   for (int i = 0; i < argc; i++) {
     printf("%s ", argv[i]);
   }
   printf("\n");
+}
+
+int main(int argc, char **argv) {
+  print_cmd(argc, argv);
   if (argc < 2) {
     usage(argv[0]);
     return 1;
@@ -36,13 +41,13 @@ int main(int argc, char **argv) {
           usage(argv[0]);
           return 3;
         }
-        printf("TODO: output to \'%s\'", argv[i]);
+        printf("TODO: output to \'%s\'\n", argv[i]);
         out = argv[i];
       }
     } else if (fn == NULL) {
       fn = argv[i];
     } else {
-      printf("Can only compile one file at a time for the moment");
+      printf("Can only compile one file at a time for the moment\n");
       usage(argv[0]);
       return 4;
     }
@@ -60,7 +65,11 @@ int main(int argc, char **argv) {
   FILE *f = fopen(fn, "r");
   if (!f) {
     printf("Error opening file \'%s\': ", fn);
+    fflush(stdout);
     perror("");
+    printf("n");
+    usage(argv[0]);
+    return 5;
   }
   string_view_t s = from_file(f);
   fclose(f);
@@ -72,8 +81,10 @@ int main(int argc, char **argv) {
     token_t tok = next(&l);
     if (is_error_tok(tok))
       break;
-    print_location_t(stdout, tok.location);
-    printf(" " SF "\n", SA(tok.lexeme));
+    // print_location_t(stdout, tok.location);
+    // printf(" " SF "\n", SA(tok.lexeme));
+    dump_token(tok);
+    printf("\n");
   }
 
   init_parsers();

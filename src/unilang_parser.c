@@ -8,6 +8,7 @@
 #include "../include/unilang_parser.h"
 #include "../include/ast.h"
 #include "../include/defs.h"
+#include "../include/unilang_lexer.h"
 
 parser_t let_parser;
 parser_t identifier_parser;

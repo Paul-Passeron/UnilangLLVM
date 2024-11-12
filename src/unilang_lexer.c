@@ -73,3 +73,105 @@ lexer_t new_unilang_lexer() {
 
   return l;
 }
+
+const char *human_token_kind(int kind) {
+  switch (kind) {
+  case DIRECTIVE:
+    return "DIRECTIVE";
+  case STRLIT:
+    return "STRLIT";
+  case KEY_LET:
+    return "KEY_LET";
+  case KEY_IF:
+    return "KEY_IF";
+  case KEY_ELSE:
+    return "KEY_ELSE";
+  case KEY_WHILE:
+    return "KEY_WHILE";
+  case KEY_LOOP:
+    return "KEY_LOOP";
+  case KEY_RETURN:
+    return "KEY_RETURN";
+  case KEY_DEFER:
+    return "KEY_DEFER";
+  case KEY_SUM:
+    return "KEY_SUM";
+  case KEY_CLASS:
+    return "KEY_CLASS";
+  case MULT:
+    return "MULT";
+  case PLUS:
+    return "PLUS";
+  case DIV:
+    return "DIV";
+  case MODULO:
+    return "MODULO";
+  case LEQ:
+    return "LEQ";
+  case LT:
+    return "LT";
+  case GEQ:
+    return "GEQ";
+  case GT:
+    return "GT";
+  case ACCESS:
+    return "ACCESS";
+  case COLON:
+    return "COLON";
+  case SEMICOLON:
+    return "SEMICOLON";
+  case BIG_ARROW:
+    return "BIG_ARROW";
+  case EQ:
+    return "EQ";
+  case DIFF:
+    return "DIFF";
+  case AND:
+    return "AND";
+  case BIT_AND:
+    return "BIT_AND";
+  case OR:
+    return "OR";
+  case BIT_OR:
+    return "BIT_OR";
+  case BIT_XOR:
+    return "BIT_XOR";
+  case NOT:
+    return "NOT";
+  case OPEN_PAR:
+    return "OPEN_PAR";
+  case CLOSE_PAR:
+    return "CLOSE_PAR";
+  case OPEN_SQR:
+    return "OPEN_SQR";
+  case CLOSE_SQR:
+    return "CLOSE_SQR";
+  case OPEN_BRA:
+    return "OPEN_BRA";
+  case CLOSE_BRA:
+    return "CLOSE_BRA";
+  case DOT:
+    return "DOT";
+  case SMALL_ARR:
+    return "SMALL_ARR";
+  case CHARLIT:
+    return "CHARLIT";
+  case INTLIT:
+    return "INTLIT";
+  case FLOATLIT:
+    return "FLOATLIT";
+  case MINUS:
+    return "MINUS";
+  case COMMA:
+    return "COMMA";
+  case IDENTIFIER:
+    return "IDENTIFIER";
+  default:
+    return "ERROR";
+  }
+}
+
+void dump_token(token_t token) {
+  print_location_t(stdout, token.location);
+  printf("\'" SF "\' %s", SA(token.lexeme), human_token_kind(token.kind));
+}
