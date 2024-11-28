@@ -77,17 +77,25 @@ int main(int argc, char **argv) {
   l.remaining = s;
   l.current_loc = (location_t){fn, 1, 1, false};
 
-  while (!is_next(&l)) {
-    token_t tok = next(&l);
-    if (is_error_tok(tok))
-      break;
-    // print_location_t(stdout, tok.location);
-    // printf(" " SF "\n", SA(tok.lexeme));
-    dump_token(tok);
-    printf("\n");
-  }
+  // lexer_t cpy = l;
 
-  init_parsers();
+  // while (!is_next(&cpy)) {
+  //   token_t tok = next(&cpy);
+  //   if (is_error_tok(tok))
+  //     break;
+  //   dump_token(tok);
+  //   printf("\n");
+  // }
+
+  int worked = 0;
+  ast_t *prog = parse_program(&l, &worked);
+  if (worked) {
+    dump_ast(prog);
+    printf("\n");
+    free_ast(prog);
+  } else {
+    printf("NOOO\n");
+  }
 
   free(s.contents);
   free(l.rules.data);

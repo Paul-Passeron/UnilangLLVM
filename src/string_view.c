@@ -8,6 +8,7 @@
 #include "../include/string_view.h"
 #include "../include/regexp.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -38,7 +39,6 @@ bool sv_matches_exact(string_view_t pattern, string_view_t string,
   bool res = matches_exact(pat, str, &r);
   int l = strlen(r);
   *rest = (string_view_t){string.contents + (r - str), l};
-  memcpy(rest->contents, r, l);
   return res;
 }
 

@@ -1,17 +1,82 @@
-/**
- * unilang_parser.h
- * Copyright (C) 2024 Paul Passeron
- * UNILANG_PARSER header file
- * Paul Passeron <paul.passeron2@gmail.com>
- */
+#ifndef PPARSER_H
+#define PPARSER_H
+#include "lexer.h"
+#include <stdlib.h>
+// PREAMBULE:
 
-#ifndef UNILANG_PARSER_H
-#define UNILANG_PARSER_H
+#include "ast.h"
+#include "parser_helper.h"
+#include "unilang_lexer.h"
 
-#include "parser.h"
+token_t *parse_token_lexeme(lexer_t *l, int *worked, string_view_t lexeme);
+token_t *parse_token_kind(lexer_t *l, int *worked, int kind);
+// RULE identifier
+void *parse_identifier(lexer_t *l, int *worked);
 
-extern parser_t let_parser;
+// RULE intlit
+void *parse_intlit(lexer_t *l, int *worked);
 
-void init_parsers(void);
+// RULE floatlit
+void *parse_floatlit(lexer_t *l, int *worked);
 
-#endif // UNILANG_PARSER_H
+// RULE charlit
+void *parse_charlit(lexer_t *l, int *worked);
+
+// RULE stringlit
+void *parse_stringlit(lexer_t *l, int *worked);
+
+// RULE boollit
+void *parse_boollit(lexer_t *l, int *worked);
+
+// RULE literal
+void *parse_literal(lexer_t *l, int *worked);
+
+// RULE param
+void *parse_param(lexer_t *l, int *worked);
+
+// RULE arglist
+void *parse_arglist(lexer_t *l, int *worked);
+
+// RULE funcall
+void *parse_funcall(lexer_t *l, int *worked);
+
+// RULE funcallargs
+void *parse_funcallargs(lexer_t *l, int *worked);
+
+// RULE leaf
+void *parse_leaf(lexer_t *l, int *worked);
+
+// RULE expr
+void *parse_expr(lexer_t *l, int *worked);
+
+// RULE stmt
+void *parse_stmt(lexer_t *l, int *worked);
+
+// RULE decl
+void *parse_decl(lexer_t *l, int *worked);
+
+// RULE binop
+void *parse_binop(lexer_t *l, int *worked);
+
+// RULE paren
+void *parse_paren(lexer_t *l, int *worked);
+
+// RULE unary
+void *parse_unary(lexer_t *l, int *worked);
+
+// RULE stmt_list
+void *parse_stmt_list(lexer_t *l, int *worked);
+
+// RULE program_list
+void *parse_program_list(lexer_t *l, int *worked);
+
+// RULE program
+void *parse_program(lexer_t *l, int *worked);
+
+// RULE fundef
+void *parse_fundef(lexer_t *l, int *worked);
+
+// RULE uop
+void *parse_uop(lexer_t *l, int *worked);
+
+#endif // PPARSER_H

@@ -158,8 +158,6 @@ token_t next(lexer_t *l) {
     if (rule.kind != BAD)
       continue;
   }
-
-  print_error(stderr, l, SV("[Syntax Error] No rule matching"));
   return error_token();
 }
 
@@ -171,3 +169,8 @@ lexer_rules_t new_rules(void) {
 }
 
 bool is_error_tok(token_t tok) { return tok.kind < 0; }
+
+token_t peek_token(lexer_t *l) {
+  lexer_t cpy = *l;
+  return next(&cpy);
+}

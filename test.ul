@@ -11,6 +11,8 @@ let strlen(s: char *): int => {
     return i;
 }
 
+print("Hello, World !");
+
 class string => {
     public contents: char *,
     public length: int,

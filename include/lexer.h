@@ -80,4 +80,6 @@ bool is_error_tok(token_t tok);
 
 token_t error_token(void);
 
+token_t peek_token(lexer_t *l);
+
 #endif // LEXER_H
