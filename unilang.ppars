@@ -57,8 +57,6 @@ param: %identifier ':' %identifier => {
 
 arglist: @list elem=%param separator=','
 
-/* This comment is important, removing it will break things... (why ?) */
-
 funcall: %identifier '(' %funcallargs ')' => {
   ast_t *iden = %{0%};
   ast_t ** elems = %{2%};
@@ -79,9 +77,6 @@ leaf:
   | %funcall => { return %{0%}; }
   | %literal => { return %{0%}; }
   | %identifier => { return %{0%}; }
-
-/*
-*/
 
 expr:
   | %binop => { return %{0%}; }
@@ -104,8 +99,6 @@ paren: '(' %expr ')' => {
   return %{1%};
 }
 
-
-
 unary: %uop %leaf => {
   token_t *ptr = %{0%};
   ast_t *leaf = %{1%}; 
@@ -115,7 +108,6 @@ unary: %uop %leaf => {
 
 stmt_list: @list elem=%stmt
 
-/**/
 program_list: @list elem=%decl
 
 program: %program_list => {
@@ -131,9 +123,6 @@ fundef: 'let' %identifier '(' %arglist ')' '=>' '{' %stmt_list '}' => {
   return new_fundef_from_parser(tok, tmp_arglist, stmt_list);
 }
 
-
 uop: 
   | '-' => { return %{0%}; }
   | 'not' => { return %{0%}; }
-
-/**/
