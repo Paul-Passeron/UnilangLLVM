@@ -78,7 +78,6 @@ int main(int argc, char **argv) {
   l.current_loc = (location_t){fn, 1, 1, false};
 
   // lexer_t cpy = l;
-
   // while (!is_next(&cpy)) {
   //   token_t tok = next(&cpy);
   //   if (is_error_tok(tok))
@@ -92,7 +91,7 @@ int main(int argc, char **argv) {
   if (worked) {
     dump_ast(prog);
     printf("\n");
-    free_ast(prog);
+    // free_ast(prog);
   } else {
     printf("NOOO\n");
   }

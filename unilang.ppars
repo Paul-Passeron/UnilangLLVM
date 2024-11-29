@@ -49,7 +49,7 @@ literal:
   | %charlit => { return %{0%}; }
   | %stringlit => { return %{0%}; }
 
-param: %identifier ':' %identifier => {
+param: %identifier ':' %type => {
   ast_t *id = %{0%};
   ast_t *type = %{2%};
   return new_param(id, type);
@@ -84,6 +84,7 @@ expr:
 
 stmt: 
   | %expr ';' => { return %{0%}; }
+  | %compound => { return %{0%}; }
 
 decl:
   | %fundef => { return %{0%}; }
@@ -99,6 +100,31 @@ paren: '(' %expr ')' => {
   return %{1%};
 }
 
+starlist: @list elem='*'
+
+type: 
+  | %identifier %starlist => {
+    ast_t * iden = %{0%};
+    token_t **starlist = %{1%};
+    size_t count = 0;
+    while(starlist[count]){
+      count++;
+    }
+    for(size_t i = 0; i < count; ++i){
+      free(starlist[i]);
+    }
+    free(starlist);
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, count);
+  }
+  | %identifier => {
+    ast_t *iden = %{0%};
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, 0);
+  }
+
 unary: %uop %leaf => {
   token_t *ptr = %{0%};
   ast_t *leaf = %{1%}; 
@@ -108,20 +134,39 @@ unary: %uop %leaf => {
 
 stmt_list: @list elem=%stmt
 
+compound: 
+  | '{' '}' => {
+    ast_t **res = malloc(sizeof(ast_t *));
+    *res = NULL;
+    return new_compound(res);
+  }
+  | '{' %stmt_list '}' => { return new_compound(%{1%}); }
+
+
 program_list: @list elem=%decl
 
 program: %program_list => {
   return new_compound(%{0%});
 }
 
-fundef: 'let' %identifier '(' %arglist ')' '=>' '{' %stmt_list '}' => {
-  ast_t *id = %{1%};
-  tmp_param_t **tmp_arglist = %{3%};
-  ast_t **stmt_list = %{7%};
-  token_t tok = id->as.identifier.tok;
-  free_ast(id);
-  return new_fundef_from_parser(tok, tmp_arglist, stmt_list);
-}
+fundef: 
+  | 'let' %identifier '(' %arglist ')' '=>' %compound => {
+    ast_t *id = %{1%};
+    tmp_param_t **tmp_arglist = %{3%};
+    ast_t *stmt_list = %{6%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list);
+  }
+  | 'let' %identifier '(' ')' '=>' %compound => {
+    ast_t *id = %{1%};
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *stmt_list = %{5%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list);
+  }
 
 uop: 
   | '-' => { return %{0%}; }

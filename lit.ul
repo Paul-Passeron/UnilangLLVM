@@ -1,4 +1,2 @@
-let my_fun(x: a, y: b) => {
-  (a + b) * 3;
-  a + b * 3;
+let my_fun(a: b*, c: d) => {
 }

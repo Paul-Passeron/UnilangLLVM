@@ -61,9 +61,22 @@ void free_boollit(ast_t *iden) { free(iden); }
 
 #define print_token(tok) printf(SF, SA(tok.lexeme))
 
+void dump_type(ast_t *t) {
+  ast_type_t type = t->as.type;
+  printf("\"" SF, SA(type.name.lexeme));
+  for (size_t i = 0; i < type.ptr_n; i++) {
+    printf("*");
+  }
+  printf("\"");
+}
+
 void dump_ast(ast_t *ast) {
   if (ast == NULL) {
     printf("null");
+    return;
+  }
+  if (ast->kind == AST_TYPE) {
+    dump_type(ast);
     return;
   }
   printf("{\n");
@@ -97,37 +110,26 @@ void dump_ast(ast_t *ast) {
     printf("\"AST_BOOLLIT\",\n");
     printf("  \"value\": %s\n", ast->as.boollit.val ? "true" : "false");
     break;
-  case AST_FUNDEF:
+  case AST_FUNDEF: {
     printf("\"AST_FUNDEF\",\n");
     printf("  \"name\": \"");
     print_token(ast->as.fundef.name);
-    printf("\",\n  \"param_count\": %zu,\n", ast->as.fundef.param_count);
 
-    printf("  \"param_types\": [");
+    printf("\", \"params\": [");
     for (size_t i = 0; i < ast->as.fundef.param_count; ++i) {
       if (i > 0) {
         printf(", ");
       }
-      printf("\"" SF "\"",
-             SA(ast->as.fundef.param_types[i]->as.identifier.tok.lexeme));
-    }
-    printf("],\n");
-
-    printf("  \"param_names\": [");
-    for (size_t i = 0; i < ast->as.fundef.param_count; ++i) {
-      if (i > 0) {
-        printf(", ");
-      }
-      printf("\"");
-      print_token(
-          ast->as.fundef.param_names[i]); // Assuming print_token handles
-                                          // token_t appropriately
-      printf("\"");
+      printf("{\"name\": \"");
+      print_token(ast->as.fundef.param_names[i]);
+      printf("\", \"type\":");
+      dump_ast(ast->as.fundef.param_types[i]);
+      printf("}");
     }
     printf("],\n");
     printf("\"body\": ");
     dump_ast(ast->as.fundef.body);
-    break;
+  } break;
   case AST_COMPOUND: {
     printf("\"AST_COMPOUND\", \n");
     printf("\"content\": [\n");
@@ -160,6 +162,10 @@ void dump_ast(ast_t *ast) {
     printf(",\n\"rhs\":");
     dump_ast(ast->as.binop.rhs);
   } break;
+  case AST_TYPE: {
+    printf("efknrfjrnflrjnfrijnflrjn^,");
+    break;
+  }
   default:
     printf("\"UNKNOWN_KIND\"\n");
     break;
@@ -168,6 +174,7 @@ void dump_ast(ast_t *ast) {
 }
 
 void free_fundef(ast_t *ast) {
+  (void)ast;
   // TODO
   return;
 }
@@ -198,25 +205,30 @@ void free_ast(ast_t *ast) {
     free_fundef(ast);
     break;
   case AST_COMPOUND:
-    // TODO
+    printf("TODO AST_COMPOUND\n");
+    exit(1);
     break;
   case AST_FUNCALL: {
     printf("TODO AST FUNCALL\n");
     exit(1);
   } break;
   case AST_UNOP: {
-    printf("TODO AST_UNOP");
+    printf("TODO AST_UNOP\n");
     exit(1);
   } break;
   case AST_BINOP: {
-    printf("TODO AST_BINOP");
+    printf("TODO AST_BINOP\n");
     exit(1);
   } break;
+  case AST_TYPE:
+    printf("TODO AST_TYPE\n");
+    exit(1);
+    break;
   }
 }
 
 ast_t *new_fundef_from_parser(token_t id, tmp_param_t **arglist,
-                              ast_t **stmt_list) {
+                              ast_t *stmt_list) {
   size_t i = 0;
   while (arglist[i]) {
     i++;
@@ -229,7 +241,7 @@ ast_t *new_fundef_from_parser(token_t id, tmp_param_t **arglist,
     free_ast(arglist[j]->name);
   }
   free(arglist);
-  return new_fundef(id, i, param_types, param_names, new_compound(stmt_list));
+  return new_fundef(id, i, param_types, param_names, stmt_list);
 }
 
 tmp_param_t *new_param(ast_t *id, ast_t *type) {
@@ -264,6 +276,7 @@ ast_t *new_compound(ast_t **elems) {
 }
 
 void free_compound(ast_t *ast) {
+  (void)ast;
   // TODO
 }
 
@@ -284,5 +297,12 @@ ast_t *new_binop(token_t op, ast_t *lhs, ast_t *rhs) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_BINOP;
   res->as.binop = (ast_binop_t){op, lhs, rhs};
+  return res;
+}
+
+ast_t *new_type(token_t name, size_t ptr_n) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_TYPE;
+  res->as.type = (ast_type_t){name, ptr_n};
   return res;
 }

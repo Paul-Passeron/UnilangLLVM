@@ -81,8 +81,6 @@ ast_t *parse_increasing_precedence(lexer_t *l, ast_t *left,
   if (is_error_tok(tok)) {
     return NULL;
   }
-  int worked = 0;
-
   if (!is_kind_op(tok.kind)) {
     return left;
   }

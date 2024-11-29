@@ -83,6 +83,8 @@ void *parse_expr_c1(lexer_t *l, int *worked);
 // RULE stmt
 void *parse_stmt_c0(lexer_t *l, int *worked);
 
+void *parse_stmt_c1(lexer_t *l, int *worked);
+
 // RULE decl
 void *parse_decl_c0(lexer_t *l, int *worked);
 
@@ -92,16 +94,29 @@ void *parse_binop_c0(lexer_t *l, int *worked);
 // RULE paren
 void *parse_paren_c0(lexer_t *l, int *worked);
 
+// RULE starlist
+// RULE type
+void *parse_type_c0(lexer_t *l, int *worked);
+
+void *parse_type_c1(lexer_t *l, int *worked);
+
 // RULE unary
 void *parse_unary_c0(lexer_t *l, int *worked);
 
 // RULE stmt_list
+// RULE compound
+void *parse_compound_c0(lexer_t *l, int *worked);
+
+void *parse_compound_c1(lexer_t *l, int *worked);
+
 // RULE program_list
 // RULE program
 void *parse_program_c0(lexer_t *l, int *worked);
 
 // RULE fundef
 void *parse_fundef_c0(lexer_t *l, int *worked);
+
+void *parse_fundef_c1(lexer_t *l, int *worked);
 
 // RULE uop
 void *parse_uop_c0(lexer_t *l, int *worked);
@@ -262,11 +277,9 @@ void *parse_arglist(lexer_t *l, int *worked) {
   size_t count = 0;
   void **elems = malloc(sizeof(void *) * cap);
   while (1) {
-    int worked = 0;
-    void *elem = parse_param(l, &rule_worked);
     lexer_t old = *l;
+    void *elem = parse_param(l, &rule_worked);
     if (!rule_worked) {
-      *l = old;
       break;
     }
     if (count >= cap) {
@@ -274,7 +287,8 @@ void *parse_arglist(lexer_t *l, int *worked) {
       elem = realloc(elem, cap * sizeof(void *));
     }
     elems[count++] = elem;
-    void *sep = parse_token_lexeme(l, &rule_worked, SV(","));
+    old = *l;
+    (void)parse_token_lexeme(l, &rule_worked, SV(","));
     if (!rule_worked) {
       *l = old;
       break;
@@ -306,11 +320,9 @@ void *parse_funcallargs(lexer_t *l, int *worked) {
   size_t count = 0;
   void **elems = malloc(sizeof(void *) * cap);
   while (1) {
-    int worked = 0;
-    void *elem = parse_expr(l, &rule_worked);
     lexer_t old = *l;
+    void *elem = parse_expr(l, &rule_worked);
     if (!rule_worked) {
-      *l = old;
       break;
     }
     if (count >= cap) {
@@ -318,7 +330,8 @@ void *parse_funcallargs(lexer_t *l, int *worked) {
       elem = realloc(elem, cap * sizeof(void *));
     }
     elems[count++] = elem;
-    void *sep = parse_token_lexeme(l, &rule_worked, SV(","));
+    old = *l;
+    (void)parse_token_lexeme(l, &rule_worked, SV(","));
     if (!rule_worked) {
       *l = old;
       break;
@@ -399,6 +412,13 @@ void *parse_stmt(lexer_t *l, int *worked) {
     *l = rule_cpy;
     return rule_res;
   }
+  rule_cpy = *l;
+  rule_res = parse_stmt_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
   return NULL;
 }
 
@@ -447,6 +467,52 @@ void *parse_paren(lexer_t *l, int *worked) {
   return NULL;
 }
 
+void *parse_starlist(lexer_t *l, int *worked) {
+  int rule_worked = 0;
+  size_t cap = 16;
+  size_t count = 0;
+  void **elems = malloc(sizeof(void *) * cap);
+  while (1) {
+    lexer_t old = *l;
+    void *elem = parse_token_lexeme(l, &rule_worked, SV("*"));
+    if (!rule_worked) {
+      *l = old;
+      break;
+    }
+    if (count >= cap) {
+      cap *= 2;
+      elem = realloc(elem, cap * sizeof(void *));
+    }
+    elems[count++] = elem;
+    old = *l;
+  }
+  elems = realloc(elems, (count + 1) * sizeof(void *));
+  elems[count] = NULL;
+  *worked = count > 0;
+  return elems;
+}
+// RULE type
+void *parse_type(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_type_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_type_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
 // RULE unary
 void *parse_unary(lexer_t *l, int *worked) {
   *worked = 0;
@@ -468,9 +534,8 @@ void *parse_stmt_list(lexer_t *l, int *worked) {
   size_t count = 0;
   void **elems = malloc(sizeof(void *) * cap);
   while (1) {
-    int worked = 0;
-    void *elem = parse_stmt(l, &rule_worked);
     lexer_t old = *l;
+    void *elem = parse_stmt(l, &rule_worked);
     if (!rule_worked) {
       *l = old;
       break;
@@ -480,21 +545,43 @@ void *parse_stmt_list(lexer_t *l, int *worked) {
       elem = realloc(elem, cap * sizeof(void *));
     }
     elems[count++] = elem;
+    old = *l;
   }
   elems = realloc(elems, (count + 1) * sizeof(void *));
   elems[count] = NULL;
   *worked = count > 0;
   return elems;
 }
+// RULE compound
+void *parse_compound(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_compound_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_compound_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
 void *parse_program_list(lexer_t *l, int *worked) {
   int rule_worked = 0;
   size_t cap = 16;
   size_t count = 0;
   void **elems = malloc(sizeof(void *) * cap);
   while (1) {
-    int worked = 0;
-    void *elem = parse_decl(l, &rule_worked);
     lexer_t old = *l;
+    void *elem = parse_decl(l, &rule_worked);
     if (!rule_worked) {
       *l = old;
       break;
@@ -504,6 +591,7 @@ void *parse_program_list(lexer_t *l, int *worked) {
       elem = realloc(elem, cap * sizeof(void *));
     }
     elems[count++] = elem;
+    old = *l;
   }
   elems = realloc(elems, (count + 1) * sizeof(void *));
   elems[count] = NULL;
@@ -532,6 +620,13 @@ void *parse_fundef(lexer_t *l, int *worked) {
   void *rule_res = NULL;
   lexer_t rule_cpy = *l;
   rule_res = parse_fundef_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_fundef_c1(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -680,7 +775,7 @@ void *parse_param_c0(lexer_t *l, int *worked) {
   if (!*worked) {
     return NULL;
   }
-  void *elem_2 = parse_identifier(l, worked);
+  void *elem_2 = parse_type(l, worked);
   if (!*worked) {
     return NULL;
   }
@@ -779,6 +874,14 @@ void *parse_stmt_c0(lexer_t *l, int *worked) {
   }
   return elem_0;
 }
+void *parse_stmt_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_compound(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
 void *parse_decl_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_fundef(l, worked);
@@ -813,6 +916,43 @@ void *parse_paren_c0(lexer_t *l, int *worked) {
 
   return elem_1;
 }
+void *parse_type_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_identifier(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_starlist(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *iden = elem_0;
+  token_t **starlist = elem_1;
+  size_t count = 0;
+  while (starlist[count]) {
+    count++;
+  }
+  for (size_t i = 0; i < count; ++i) {
+    free(starlist[i]);
+  }
+  free(starlist);
+  token_t tok = iden->as.identifier.tok;
+  free_ast(iden);
+  return new_type(tok, count);
+}
+void *parse_type_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_identifier(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *iden = elem_0;
+  token_t tok = iden->as.identifier.tok;
+  free_ast(iden);
+  return new_type(tok, 0);
+}
 void *parse_unary_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_uop(l, worked);
@@ -828,6 +968,37 @@ void *parse_unary_c0(lexer_t *l, int *worked) {
   ast_t *leaf = elem_1;
   ast_t *res = new_unop(*ptr, leaf);
   return res;
+}
+void *parse_compound_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("{")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("}")));
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t **res = malloc(sizeof(ast_t *));
+  *res = NULL;
+  return new_compound(res);
+}
+void *parse_compound_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("{")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_stmt_list(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("}")));
+  if (!*worked) {
+    return NULL;
+  }
+  return new_compound(elem_1);
 }
 void *parse_program_c0(lexer_t *l, int *worked) {
   *worked = 0;
@@ -864,22 +1035,49 @@ void *parse_fundef_c0(lexer_t *l, int *worked) {
   if (!*worked) {
     return NULL;
   }
-  free(parse_token_lexeme(l, worked, SV("{")));
-  if (!*worked) {
-    return NULL;
-  }
-  void *elem_7 = parse_stmt_list(l, worked);
-  if (!*worked) {
-    return NULL;
-  }
-  free(parse_token_lexeme(l, worked, SV("}")));
+  void *elem_6 = parse_compound(l, worked);
   if (!*worked) {
     return NULL;
   }
 
   ast_t *id = elem_1;
   tmp_param_t **tmp_arglist = elem_3;
-  ast_t **stmt_list = elem_7;
+  ast_t *stmt_list = elem_6;
+  token_t tok = id->as.identifier.tok;
+  free_ast(id);
+  return new_fundef_from_parser(tok, tmp_arglist, stmt_list);
+}
+void *parse_fundef_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("let")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_identifier(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("(")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV(")")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_5 = parse_compound(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *id = elem_1;
+  tmp_param_t **tmp_arglist = malloc(sizeof(void *));
+  tmp_arglist[0] = NULL;
+  ast_t *stmt_list = elem_5;
   token_t tok = id->as.identifier.tok;
   free_ast(id);
   return new_fundef_from_parser(tok, tmp_arglist, stmt_list);

@@ -24,6 +24,7 @@ typedef enum ast_kind_t {
   AST_FUNCALL,
   AST_UNOP,
   AST_BINOP,
+  AST_TYPE,
 } ast_kind_t;
 
 typedef struct ast_identifier_t {
@@ -93,7 +94,7 @@ ast_t *new_funcall(token_t called, size_t arg_count, ast_t **args);
 tmp_param_t *new_param(ast_t *id, ast_t *type);
 
 ast_t *new_fundef_from_parser(token_t id, tmp_param_t **arglist,
-                              ast_t **stmt_list);
+                              ast_t *stmt_list);
 
 ast_t *new_identifier(token_t tok);
 void free_identifier(ast_t *iden);
@@ -113,6 +114,13 @@ void free_intlit(ast_t *iden);
 ast_t *new_boollit(int val);
 void free_boollit(ast_t *iden);
 
+typedef struct ast_type_t {
+  token_t name;
+  size_t ptr_n;
+} ast_type_t;
+
+ast_t *new_type(token_t name, size_t ptr_n);
+
 typedef union ast_as_t {
   ast_identifier_t identifier;
   ast_floatlit_t floatlit;
@@ -126,6 +134,7 @@ typedef union ast_as_t {
   ast_funcall_t funcall;
   ast_unop_t unop;
   ast_binop_t binop;
+  ast_type_t type;
 } ast_as_t;
 
 struct ast_t {

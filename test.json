@@ -4,59 +4,19 @@
     {
       "kind": "AST_FUNDEF",
       "name": "my_fun",
-      "param_count": 2,
-      "param_types": [
-        "a",
-        "b"
-      ],
-      "param_names": [
-        "x",
-        "y"
+      "params": [
+        {
+          "name": "a",
+          "type": "b*"
+        },
+        {
+          "name": "c",
+          "type": "d"
+        }
       ],
       "body": {
         "kind": "AST_COMPOUND",
-        "content": [
-          {
-            "kind": "AST_BINOP",
-            "operator": "*",
-            "lhs": {
-              "kind": "AST_BINOP",
-              "operator": "+",
-              "lhs": {
-                "kind": "AST_IDENTIFIER",
-                "value": "a"
-              },
-              "rhs": {
-                "kind": "AST_IDENTIFIER",
-                "value": "b"
-              }
-            },
-            "rhs": {
-              "kind": "AST_INTLIT",
-              "value": "3"
-            }
-          },
-          {
-            "kind": "AST_BINOP",
-            "operator": "+",
-            "lhs": {
-              "kind": "AST_IDENTIFIER",
-              "value": "a"
-            },
-            "rhs": {
-              "kind": "AST_BINOP",
-              "operator": "*",
-              "lhs": {
-                "kind": "AST_IDENTIFIER",
-                "value": "b"
-              },
-              "rhs": {
-                "kind": "AST_INTLIT",
-                "value": "3"
-              }
-            }
-          }
-        ]
+        "content": []
       }
     }
   ]

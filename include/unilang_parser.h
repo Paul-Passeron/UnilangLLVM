@@ -61,11 +61,20 @@ void *parse_binop(lexer_t *l, int *worked);
 // RULE paren
 void *parse_paren(lexer_t *l, int *worked);
 
+// RULE starlist
+void *parse_starlist(lexer_t *l, int *worked);
+
+// RULE type
+void *parse_type(lexer_t *l, int *worked);
+
 // RULE unary
 void *parse_unary(lexer_t *l, int *worked);
 
 // RULE stmt_list
 void *parse_stmt_list(lexer_t *l, int *worked);
+
+// RULE compound
+void *parse_compound(lexer_t *l, int *worked);
 
 // RULE program_list
 void *parse_program_list(lexer_t *l, int *worked);
