@@ -175,3 +175,8 @@ void dump_token(token_t token) {
   print_location_t(stdout, token.location);
   printf("\'" SF "\' %s", SA(token.lexeme), human_token_kind(token.kind));
 }
+
+void fdump_token(FILE *f, token_t token) {
+  print_location_t(f, token.location);
+  fprintf(f, "\'" SF "\' %s", SA(token.lexeme), human_token_kind(token.kind));
+}

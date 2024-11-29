@@ -77,14 +77,14 @@ int main(int argc, char **argv) {
   l.remaining = s;
   l.current_loc = (location_t){fn, 1, 1, false};
 
-  // lexer_t cpy = l;
-  // while (!is_next(&cpy)) {
-  //   token_t tok = next(&cpy);
-  //   if (is_error_tok(tok))
-  //     break;
-  //   dump_token(tok);
-  //   printf("\n");
-  // }
+  lexer_t cpy = l;
+  while (!is_next(&cpy)) {
+    token_t tok = next(&cpy);
+    if (is_error_tok(tok))
+      break;
+    fdump_token(stderr, tok);
+    fprintf(stderr, "\n");
+  }
 
   int worked = 0;
   ast_t *prog = parse_program(&l, &worked);

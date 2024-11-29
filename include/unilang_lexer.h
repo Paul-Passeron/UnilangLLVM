@@ -61,5 +61,6 @@ typedef enum token_kind_t {
 lexer_t new_unilang_lexer();
 const char *human_token_kind(int kind);
 void dump_token(token_t token);
+void fdump_token(FILE *f, token_t token);
 
 #endif // UNILANG_LEXER_H

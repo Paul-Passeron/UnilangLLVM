@@ -92,9 +92,6 @@ void *parse_fundef(lexer_t *l, int *worked);
 // RULE uop
 void *parse_uop(lexer_t *l, int *worked);
 
-// RULE vardef_letless
-void *parse_vardef_letless(lexer_t *l, int *worked);
-
 // RULE vardef
 void *parse_vardef(lexer_t *l, int *worked);
 
@@ -107,13 +104,7 @@ void *parse_access_spec(lexer_t *l, int *worked);
 // RULE abstract_opt
 void *parse_abstract_opt(lexer_t *l, int *worked);
 
-// RULE class_body
-void *parse_class_body(lexer_t *l, int *worked);
-
-// RULE class_body_item
-void *parse_class_body_item(lexer_t *l, int *worked);
-
-// RULE class_decl
-void *parse_class_decl(lexer_t *l, int *worked);
+// RULE method_decl
+void *parse_method_decl(lexer_t *l, int *worked);
 
 #endif // PPARSER_H

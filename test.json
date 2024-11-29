@@ -2,22 +2,70 @@
   "kind": "AST_COMPOUND",
   "content": [
     {
-      "kind": "AST_FUNDEF",
-      "name": "my_fun",
-      "params": [
+      "kind": "AST_CLASS",
+      "name": "C",
+      "fields": [
         {
-          "name": "a",
-          "type": "b*"
+          "kind": "AST_VARDEF",
+          "name": "name",
+          "type": "string",
+          "value": {
+            "kind": "AST_STRINGLIT",
+            "value": "Jerome"
+          }
         },
         {
-          "name": "c",
-          "type": "d"
+          "kind": "AST_METHOD",
+          "abstract": "true",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "fun",
+            "return_type": "void",
+            "params": [
+              {
+                "name": "a",
+                "type": "b"
+              },
+              {
+                "name": "c",
+                "type": "d"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": "this_is_a_funcall",
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "a"
+                    },
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "b"
+                    },
+                    {
+                      "kind": "AST_BINOP",
+                      "operator": "+",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "a"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "b"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         }
-      ],
-      "body": {
-        "kind": "AST_COMPOUND",
-        "content": []
-      }
+      ]
     }
   ]
 }
