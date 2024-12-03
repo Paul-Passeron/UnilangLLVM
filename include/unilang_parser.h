@@ -38,9 +38,6 @@ void *parse_param(lexer_t *l, int *worked);
 // RULE arglist
 void *parse_arglist(lexer_t *l, int *worked);
 
-// RULE funcall
-void *parse_funcall(lexer_t *l, int *worked);
-
 // RULE funcallargs
 void *parse_funcallargs(lexer_t *l, int *worked);
 
@@ -107,6 +104,9 @@ void *parse_access_spec(lexer_t *l, int *worked);
 // RULE abstract_opt
 void *parse_abstract_opt(lexer_t *l, int *worked);
 
+// RULE static_opt
+void *parse_static_opt(lexer_t *l, int *worked);
+
 // RULE class_body
 void *parse_class_body(lexer_t *l, int *worked);
 
@@ -115,5 +115,17 @@ void *parse_class_body_item(lexer_t *l, int *worked);
 
 // RULE class_decl
 void *parse_class_decl(lexer_t *l, int *worked);
+
+// RULE if_statement
+void *parse_if_statement(lexer_t *l, int *worked);
+
+// RULE while_stmt
+void *parse_while_stmt(lexer_t *l, int *worked);
+
+// RULE assignement
+void *parse_assignement(lexer_t *l, int *worked);
+
+// RULE return
+void *parse_return(lexer_t *l, int *worked);
 
 #endif // PPARSER_H

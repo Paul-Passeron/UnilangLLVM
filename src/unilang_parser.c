@@ -62,9 +62,6 @@ void *parse_literal_c3(lexer_t *l, int *worked);
 void *parse_param_c0(lexer_t *l, int *worked);
 
 // RULE arglist
-// RULE funcall
-void *parse_funcall_c0(lexer_t *l, int *worked);
-
 // RULE funcallargs
 // RULE leaf
 void *parse_leaf_c0(lexer_t *l, int *worked);
@@ -72,8 +69,6 @@ void *parse_leaf_c0(lexer_t *l, int *worked);
 void *parse_leaf_c1(lexer_t *l, int *worked);
 
 void *parse_leaf_c2(lexer_t *l, int *worked);
-
-void *parse_leaf_c3(lexer_t *l, int *worked);
 
 // RULE expr
 void *parse_expr_c0(lexer_t *l, int *worked);
@@ -86,6 +81,14 @@ void *parse_stmt_c0(lexer_t *l, int *worked);
 void *parse_stmt_c1(lexer_t *l, int *worked);
 
 void *parse_stmt_c2(lexer_t *l, int *worked);
+
+void *parse_stmt_c3(lexer_t *l, int *worked);
+
+void *parse_stmt_c4(lexer_t *l, int *worked);
+
+void *parse_stmt_c5(lexer_t *l, int *worked);
+
+void *parse_stmt_c6(lexer_t *l, int *worked);
 
 // RULE decl
 void *parse_decl_c0(lexer_t *l, int *worked);
@@ -155,6 +158,11 @@ void *parse_abstract_opt_c0(lexer_t *l, int *worked);
 
 void *parse_abstract_opt_c1(lexer_t *l, int *worked);
 
+// RULE static_opt
+void *parse_static_opt_c0(lexer_t *l, int *worked);
+
+void *parse_static_opt_c1(lexer_t *l, int *worked);
+
 // RULE class_body
 // RULE class_body_item
 void *parse_class_body_item_c0(lexer_t *l, int *worked);
@@ -163,6 +171,20 @@ void *parse_class_body_item_c1(lexer_t *l, int *worked);
 
 // RULE class_decl
 void *parse_class_decl_c0(lexer_t *l, int *worked);
+
+// RULE if_statement
+void *parse_if_statement_c0(lexer_t *l, int *worked);
+
+void *parse_if_statement_c1(lexer_t *l, int *worked);
+
+// RULE while_stmt
+void *parse_while_stmt_c0(lexer_t *l, int *worked);
+
+// RULE assignement
+void *parse_assignement_c0(lexer_t *l, int *worked);
+
+// RULE return
+void *parse_return_c0(lexer_t *l, int *worked);
 
 // RULE identifier
 void *parse_identifier(lexer_t *l, int *worked) {
@@ -340,21 +362,6 @@ void *parse_arglist(lexer_t *l, int *worked) {
   *worked = count > 0;
   return elems;
 }
-// RULE funcall
-void *parse_funcall(lexer_t *l, int *worked) {
-  *worked = 0;
-  int rule_worked = 0;
-  void *rule_res = NULL;
-  lexer_t rule_cpy = *l;
-  rule_res = parse_funcall_c0(&rule_cpy, &rule_worked);
-  if (rule_worked) {
-    *worked = 1;
-    *l = rule_cpy;
-    return rule_res;
-  }
-  return NULL;
-}
-
 void *parse_funcallargs(lexer_t *l, int *worked) {
   int rule_worked = 0;
   size_t cap = 16;
@@ -409,13 +416,6 @@ void *parse_leaf(lexer_t *l, int *worked) {
     *l = rule_cpy;
     return rule_res;
   }
-  rule_cpy = *l;
-  rule_res = parse_leaf_c3(&rule_cpy, &rule_worked);
-  if (rule_worked) {
-    *worked = 1;
-    *l = rule_cpy;
-    return rule_res;
-  }
   return NULL;
 }
 
@@ -462,6 +462,34 @@ void *parse_stmt(lexer_t *l, int *worked) {
   }
   rule_cpy = *l;
   rule_res = parse_stmt_c2(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_stmt_c3(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_stmt_c4(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_stmt_c5(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_stmt_c6(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -837,6 +865,28 @@ void *parse_abstract_opt(lexer_t *l, int *worked) {
   return NULL;
 }
 
+// RULE static_opt
+void *parse_static_opt(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_static_opt_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_static_opt_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
 void *parse_class_body(lexer_t *l, int *worked) {
   int rule_worked = 0;
   size_t cap = 16;
@@ -894,6 +944,73 @@ void *parse_class_decl(lexer_t *l, int *worked) {
   void *rule_res = NULL;
   lexer_t rule_cpy = *l;
   rule_res = parse_class_decl_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
+// RULE if_statement
+void *parse_if_statement(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_if_statement_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_if_statement_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
+// RULE while_stmt
+void *parse_while_stmt(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_while_stmt_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
+// RULE assignement
+void *parse_assignement(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_assignement_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
+// RULE return
+void *parse_return(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_return_c0(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -1029,36 +1146,6 @@ void *parse_param_c0(lexer_t *l, int *worked) {
   ast_t *type = elem_2;
   return new_param(id, type);
 }
-void *parse_funcall_c0(lexer_t *l, int *worked) {
-  *worked = 0;
-  void *elem_0 = parse_identifier(l, worked);
-  if (!*worked) {
-    return NULL;
-  }
-  free(parse_token_lexeme(l, worked, SV("(")));
-  if (!*worked) {
-    return NULL;
-  }
-  void *elem_2 = parse_funcallargs(l, worked);
-  if (!*worked) {
-    return NULL;
-  }
-  free(parse_token_lexeme(l, worked, SV(")")));
-  if (!*worked) {
-    return NULL;
-  }
-
-  ast_t *iden = elem_0;
-  ast_t **elems = elem_2;
-  token_t name = iden->as.identifier.tok;
-  free_ast(iden);
-  size_t i = 0;
-  while (elems[i]) {
-    i++;
-  }
-  elems = realloc(elems, sizeof(ast_t *) * i);
-  return new_funcall(name, i, elems);
-}
 void *parse_leaf_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_paren(l, worked);
@@ -1069,21 +1156,13 @@ void *parse_leaf_c0(lexer_t *l, int *worked) {
 }
 void *parse_leaf_c1(lexer_t *l, int *worked) {
   *worked = 0;
-  void *elem_0 = parse_funcall(l, worked);
-  if (!*worked) {
-    return NULL;
-  }
-  return elem_0;
-}
-void *parse_leaf_c2(lexer_t *l, int *worked) {
-  *worked = 0;
   void *elem_0 = parse_literal(l, worked);
   if (!*worked) {
     return NULL;
   }
   return elem_0;
 }
-void *parse_leaf_c3(lexer_t *l, int *worked) {
+void *parse_leaf_c2(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_identifier(l, worked);
   if (!*worked) {
@@ -1130,6 +1209,38 @@ void *parse_stmt_c1(lexer_t *l, int *worked) {
 void *parse_stmt_c2(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_vardef(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_stmt_c3(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_if_statement(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_stmt_c4(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_while_stmt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_stmt_c5(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_assignement(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_stmt_c6(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_return(l, worked);
   if (!*worked) {
     return NULL;
   }
@@ -1210,7 +1321,7 @@ void *parse_type_c0(lexer_t *l, int *worked) {
   while (starlist[count]) {
     count++;
   }
-  fprintf(stderr, "count: %dn", (int)count);
+
   for (size_t i = 0; i < count; ++i) {
     free(starlist[i]);
   }
@@ -1348,11 +1459,11 @@ void *parse_fundef_letless_c1(lexer_t *l, int *worked) {
   if (!*worked) {
     return NULL;
   }
-  free(parse_type(l, worked));
+  void *elem_4 = parse_type(l, worked);
   if (!*worked) {
     return NULL;
   }
-  void *elem_5 = parse_token_lexeme(l, worked, SV("=>"));
+  free(parse_token_lexeme(l, worked, SV("=>")));
   if (!*worked) {
     return NULL;
   }
@@ -1362,7 +1473,7 @@ void *parse_fundef_letless_c1(lexer_t *l, int *worked) {
   }
 
   ast_t *id = elem_0;
-  ast_t *type = elem_5;
+  ast_t *type = elem_4;
   tmp_param_t **tmp_arglist = malloc(sizeof(void *));
   tmp_arglist[0] = NULL;
   ast_t *stmt_list = elem_6;
@@ -1372,15 +1483,15 @@ void *parse_fundef_letless_c1(lexer_t *l, int *worked) {
 }
 void *parse_fundef_c0(lexer_t *l, int *worked) {
   *worked = 0;
-  void *elem_0 = parse_token_lexeme(l, worked, SV("let"));
+  free(parse_token_lexeme(l, worked, SV("let")));
   if (!*worked) {
     return NULL;
   }
-  free(parse_fundef_letless(l, worked));
+  void *elem_1 = parse_fundef_letless(l, worked);
   if (!*worked) {
     return NULL;
   }
-  return elem_0;
+  return elem_1;
 }
 void *parse_uop_c0(lexer_t *l, int *worked) {
   *worked = 0;
@@ -1519,6 +1630,22 @@ void *parse_abstract_opt_c1(lexer_t *l, int *worked) {
   (void)l;
   return NULL;
 }
+void *parse_static_opt_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_token_lexeme(l, worked, SV("static"));
+  if (!*worked) {
+    return NULL;
+  }
+
+  return elem_0;
+}
+void *parse_static_opt_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+
+  *worked = 1;
+  (void)l;
+  return NULL;
+}
 void *parse_class_body_item_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_abstract_opt(l, worked);
@@ -1529,17 +1656,24 @@ void *parse_class_body_item_c0(lexer_t *l, int *worked) {
   if (!*worked) {
     return NULL;
   }
-  void *elem_2 = parse_fundef_letless(l, worked);
+  void *elem_2 = parse_static_opt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_3 = parse_fundef_letless(l, worked);
   if (!*worked) {
     return NULL;
   }
 
-  uintptr_t abstract_opt = (uintptr_t)elem_0;
   token_t *access_spec_ptr = elem_1;
   token_t access_spec = *access_spec_ptr;
+  uintptr_t abstract_opt = (uintptr_t)elem_0;
+  uintptr_t static_opt = (uintptr_t)elem_2;
   free(access_spec_ptr);
-  ast_t *fundef = elem_2;
-  return new_method(fundef, access_spec, abstract_opt != 0);
+  free(elem_0);
+  free(elem_2);
+  ast_t *fundef = elem_3;
+  return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
 }
 void *parse_class_body_item_c1(lexer_t *l, int *worked) {
   *worked = 0;
@@ -1547,13 +1681,16 @@ void *parse_class_body_item_c1(lexer_t *l, int *worked) {
   if (!*worked) {
     return NULL;
   }
-  void *elem_1 = parse_vardef_letless(l, worked);
+  free(parse_static_opt(l, worked));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_2 = parse_vardef_letless(l, worked);
   if (!*worked) {
     return NULL;
   }
 
-  // for the moment; fix it later
-  return elem_1;
+  return elem_2;
 }
 void *parse_class_decl_c0(lexer_t *l, int *worked) {
   *worked = 0;
@@ -1591,4 +1728,118 @@ void *parse_class_decl_c0(lexer_t *l, int *worked) {
     count++;
   }
   return new_class(name, count, body);
+}
+void *parse_if_statement_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("if")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_expr(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_3 = parse_stmt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("else")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_5 = parse_stmt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *cond = elem_1;
+  ast_t *stmt1 = elem_3;
+  ast_t *stmt2 = elem_5;
+  return new_if_stmt(cond, stmt1, stmt2);
+}
+void *parse_if_statement_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("if")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_expr(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_3 = parse_stmt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *cond = elem_1;
+  ast_t *stmt1 = elem_3;
+  return new_if_stmt(cond, stmt1, NULL);
+}
+void *parse_while_stmt_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("while")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_expr(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_3 = parse_stmt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  return new_while_stmt(elem_1, elem_3);
+}
+void *parse_assignement_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_expr(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_2 = parse_expr(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV(";")));
+  if (!*worked) {
+    return NULL;
+  }
+
+  return new_assignement(elem_0, elem_2);
+}
+void *parse_return_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("return")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_expr(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV(";")));
+  if (!*worked) {
+    return NULL;
+  }
+
+  return new_return(elem_1);
 }

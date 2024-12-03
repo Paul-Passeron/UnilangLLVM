@@ -13,6 +13,8 @@ ast_t *new_binop(token_t tok, ast_t *lhs, ast_t *rhs);
 
 int get_precedence_aux(int kind) {
   switch (kind) {
+  case ACCESS:
+    return 1;
   case MULT:
   case DIV:
   case MODULO:
@@ -53,6 +55,61 @@ int get_precedence(int kind) {
 
 bool is_kind_op(const int kind) { return get_precedence(kind) != -1; }
 
+bool is_postfix(lexer_t *l) {
+  token_t t = peek_token(l);
+  if (is_error_tok(t))
+    return 0;
+  switch (t.kind) {
+  case OPEN_PAR:
+  case OPEN_SQR:
+    return true;
+  default:
+    return false;
+  }
+}
+
+ast_t *parse_funcall(lexer_t *l, ast_t *called) {
+  int w;
+  token_t tok = peek_token(l);
+  ast_t **elems;
+  size_t count = 0;
+  if (tok.kind == CLOSE_PAR) {
+    // don't need to parse the funcall args
+    elems = malloc(sizeof(ast_t *));
+    *elems = NULL;
+  } else {
+    elems = parse_funcallargs(l, &w);
+    while (elems[count]) {
+      count++;
+    }
+    elems = realloc(elems, sizeof(ast_t *) * count);
+  }
+  tok = next(l);
+  if (tok.kind != CLOSE_PAR) {
+    return NULL;
+  }
+  return new_funcall(called, count, elems);
+}
+
+ast_t *parse_postfix(lexer_t *l, ast_t *left) {
+  token_t tok = next(l);
+  if (is_error_tok(tok))
+    return left; // ignore error
+  if (tok.kind == OPEN_PAR) {
+    return parse_funcall(l, left);
+  } else if (tok.kind == OPEN_SQR) {
+    int w;
+    ast_t *expr = parse_expr(l, &w);
+    if (!w)
+      return NULL;
+    tok = next(l);
+    if (tok.kind != CLOSE_SQR) {
+      return NULL;
+    }
+    return new_index(left, expr);
+  }
+  return left;
+}
 ast_t *parse_expression_aux(lexer_t *l, int min_precedence) {
   int worked = 0;
   ast_t *left = parse_leaf(l, &worked);
@@ -80,6 +137,9 @@ ast_t *parse_increasing_precedence(lexer_t *l, ast_t *left,
   token_t tok = peek_token(l);
   if (is_error_tok(tok)) {
     return NULL;
+  }
+  while (is_postfix(l)) {
+    left = parse_postfix(l, left);
   }
   if (!is_kind_op(tok.kind)) {
     return left;

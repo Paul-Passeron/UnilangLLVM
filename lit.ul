@@ -1,7 +1,0 @@
-class C => {
-  public name: string => "Jerome",
-  abstract public fun(a: b, c: d): void => {
-    this_is_a_funcall(a, b, a + b);
-  },
-
-}

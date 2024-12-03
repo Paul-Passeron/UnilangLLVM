@@ -29,6 +29,11 @@ typedef enum ast_kind_t {
   AST_CT_CTE, // compile-time constant
   AST_METHOD,
   AST_CLASS,
+  AST_IFSTMT,
+  AST_INDEX,
+  AST_WHILE,
+  AST_ASSIGN,
+  AST_RETURN,
 } ast_kind_t;
 
 typedef struct ast_identifier_t {
@@ -53,9 +58,6 @@ typedef struct ast_fundef_t {
   ast_t *body;
 } ast_fundef_t;
 
-ast_t *new_fundef(token_t name, size_t param_count, ast_t **param_types,
-                  token_t *param_names, ast_t *body, ast_t *return_type);
-
 typedef struct tmp_param_t {
   ast_t *name;
   ast_t *type;
@@ -68,17 +70,16 @@ typedef struct ast_compound_t {
 
 typedef ast_compound_t ast_program_t;
 
-ast_t *new_compound(ast_t **elems);
-void free_compound(ast_t *ast);
-
-ast_t *new_program(ast_t **elems);
-void free_program(ast_t *ast);
-
 typedef struct ast_funcall_t {
-  token_t called;
+  ast_t *called;
   size_t arg_count;
   ast_t **args;
 } ast_funcall_t;
+
+typedef struct ast_index_t {
+  ast_t *subscripted;
+  ast_t *index;
+} ast_index_t;
 
 typedef struct ast_unop_t {
   token_t op;
@@ -91,10 +92,120 @@ typedef struct ast_binop_t {
   ast_t *rhs;
 } ast_binop_t;
 
+typedef struct ast_type_t {
+  token_t name;
+  size_t ptr_n;
+} ast_type_t;
+
+typedef struct ast_vardef_t {
+  token_t name;
+  ast_t *type;
+  ast_t *value; // can be NULL
+} ast_vardef_t;
+
+typedef struct ast_ct_cte_t {
+  token_t name;
+  ast_t *value; // can be NULL
+} ast_ct_cte_t;
+
+typedef struct ast_method_t {
+  ast_t *fdef;
+  token_t specifier;
+  int is_abstract;
+  int is_static;
+} ast_method_t;
+
+typedef struct ast_class_t {
+  token_t name;
+  size_t field_count;
+  ast_t **fields;
+} ast_class_t;
+
+typedef struct ast_if_stmt_t {
+  ast_t *cond;
+  ast_t *body;
+  ast_t *other_body;
+} ast_if_stmt_t;
+
+typedef struct ast_assign_t {
+  ast_t *lhs;
+  ast_t *rhs;
+} ast_assign_t;
+
+typedef struct ast_while_t {
+  ast_t *cond;
+  ast_t *body;
+} ast_while_t;
+
+typedef struct ast_return_t {
+  ast_t *expr;
+} ast_return_t;
+
+typedef union ast_as_t {
+  ast_identifier_t identifier;
+  ast_floatlit_t floatlit;
+  ast_charlit_t charlit;
+  ast_stringlit_t stringlit;
+  ast_intlit_t intlit;
+  ast_boollit_t boollit;
+  ast_fundef_t fundef;
+  ast_compound_t compound;
+  ast_program_t program;
+  ast_funcall_t funcall;
+  ast_unop_t unop;
+  ast_binop_t binop;
+  ast_type_t type;
+  ast_vardef_t vardef;
+  ast_ct_cte_t ct_cte;
+  ast_method_t method;
+  ast_class_t clazz;
+  ast_if_stmt_t if_stmt;
+  ast_index_t index;
+  ast_assign_t assign;
+  ast_while_t while_stmt;
+  ast_return_t return_stmt;
+} ast_as_t;
+
+struct ast_t {
+  ast_kind_t kind;
+  ast_as_t as;
+};
+
+ast_t *new_return(ast_t *expr);
+
+ast_t *new_while_stmt(ast_t *cond, ast_t *body);
+
+ast_t *new_assignement(ast_t *lhs, ast_t *rhs);
+
+ast_t *new_type(token_t name, size_t ptr_n);
+
+ast_t *new_vardef(token_t name, ast_t *type, ast_t *value);
+
+ast_t *new_ct_cte(token_t name, ast_t *value);
+
+ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract,
+                  int is_static);
+
+ast_t *new_class(token_t name, size_t field_count, ast_t **fields);
+
+ast_t *new_if_stmt(ast_t *cond, ast_t *body, ast_t *other_body);
+
+ast_t *new_fundef(token_t name, size_t param_count, ast_t **param_types,
+                  token_t *param_names, ast_t *body, ast_t *return_type);
+
+ast_t *new_compound(ast_t **elems);
+void free_compound(ast_t *ast);
+
+ast_t *new_program(ast_t **elems);
+void free_program(ast_t *ast);
+
 ast_t *new_unop(token_t op, ast_t *operand);
+
 ast_t *new_binop(token_t op, ast_t *lhs, ast_t *rhs);
 
-ast_t *new_funcall(token_t called, size_t arg_count, ast_t **args);
+ast_t *new_funcall(ast_t *called, size_t arg_count, ast_t **args);
+
+ast_t *new_index(ast_t *subscripted, ast_t *index);
 
 tmp_param_t *new_param(ast_t *id, ast_t *type);
 
@@ -118,69 +229,6 @@ void free_intlit(ast_t *iden);
 
 ast_t *new_boollit(int val);
 void free_boollit(ast_t *iden);
-
-typedef struct ast_type_t {
-  token_t name;
-  size_t ptr_n;
-} ast_type_t;
-
-ast_t *new_type(token_t name, size_t ptr_n);
-
-typedef struct ast_vardef_t {
-  token_t name;
-  ast_t *type;
-  ast_t *value; // can be NULL
-} ast_vardef_t;
-
-ast_t *new_vardef(token_t name, ast_t *type, ast_t *value);
-
-typedef struct ast_ct_cte_t {
-  token_t name;
-  ast_t *value; // can be NULL
-} ast_ct_cte_t;
-
-ast_t *new_ct_cte(token_t name, ast_t *value);
-
-typedef struct ast_method_t {
-  ast_t *fdef;
-  token_t specifier;
-  int is_abstract;
-} ast_method_t;
-
-ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract);
-
-typedef struct ast_class_t {
-  token_t name;
-  size_t field_count;
-  ast_t **fields;
-} ast_class_t;
-
-ast_t *new_class(token_t name, size_t field_count, ast_t **fields);
-
-typedef union ast_as_t {
-  ast_identifier_t identifier;
-  ast_floatlit_t floatlit;
-  ast_charlit_t charlit;
-  ast_stringlit_t stringlit;
-  ast_intlit_t intlit;
-  ast_boollit_t boollit;
-  ast_fundef_t fundef;
-  ast_compound_t compound;
-  ast_program_t program;
-  ast_funcall_t funcall;
-  ast_unop_t unop;
-  ast_binop_t binop;
-  ast_type_t type;
-  ast_vardef_t vardef;
-  ast_ct_cte_t ct_cte;
-  ast_method_t method;
-  ast_class_t clazz;
-} ast_as_t;
-
-struct ast_t {
-  ast_kind_t kind;
-  ast_as_t as;
-};
 
 void dump_ast(ast_t *ast);
 void free_ast(ast_t *ast);

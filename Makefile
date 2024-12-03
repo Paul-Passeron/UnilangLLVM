@@ -1,7 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -g
-LIBS=-rdynamic
-
+LIBS=
 SRC=src/
 BUILD=build/
 BIN=bin/

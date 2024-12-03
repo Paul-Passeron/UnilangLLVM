@@ -1,29 +1,26 @@
-@include "sys.ul"
+// @include "sys.ul"
 
-let STDIN: int => 0;
-let STDOUT: int => 1;
+@const STDIN 0;
+@const STDOUT 1;
+@const SYS_WRITE 4;
 
-let SYS_WRITE: int => 4;
 
 let strlen(s: char *): int => {
-    let i: int = 0;
-    while s[i] => i => i+1;
+    let i: int => 0;
+    while s[i] => {i => i+1;}
     return i;
 }
-
-print("Hello, World !");
 
 class string => {
     public contents: char *,
     public length: int,
 
-    public let string(c: char*, l: int) => {
+    public string(c: char*, l: int): Self => {
         self::contents => c;
         self::length => l;
     },
 
-    @implicit
-    public let string(c_str: char *) => {
+    public string(c_str: char *): Self => {
         self::contents => c_str;
         self::length => strlen(c_str);
     }

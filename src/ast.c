@@ -80,39 +80,39 @@ void dump_ast(ast_t *ast) {
     dump_type(ast);
     return;
   }
-  printf("{\n");
+  printf("{");
   printf("  \"kind\": ");
   switch (ast->kind) {
   case AST_IDENTIFIER:
-    printf("\"AST_IDENTIFIER\",\n");
+    printf("\"AST_IDENTIFIER\",");
     printf("  \"value\": \"");
     print_token(ast->as.identifier.tok);
-    printf("\"\n");
+    printf("\"");
     break;
   case AST_INTLIT:
-    printf("\"AST_INTLIT\",\n");
-    printf("  \"value\": \"" SF "\"\n",
+    printf("\"AST_INTLIT\",");
+    printf("  \"value\": \"" SF "\"",
            SA(ast->as.intlit.tok.lexeme)); // Assuming tok.value is a string
                                            // representation of the integer
     break;
   case AST_FLOATLIT:
-    printf("\"AST_FLOATLIT\",\n");
-    printf("  \"value\": \"" SF "\"\n", SA(ast->as.floatlit.tok.lexeme));
+    printf("\"AST_FLOATLIT\",");
+    printf("  \"value\": \"" SF "\"", SA(ast->as.floatlit.tok.lexeme));
     break;
   case AST_CHARLIT:
-    printf("\"AST_CHARLIT\",\n");
-    printf("  \"value\": \"" SF "\"\n", SA(ast->as.charlit.tok.lexeme));
+    printf("\"AST_CHARLIT\",");
+    printf("  \"value\": \"" SF "\"", SA(ast->as.charlit.tok.lexeme));
     break;
   case AST_STRINGLIT:
-    printf("\"AST_STRINGLIT\",\n");
-    printf("  \"value\": " SF "\n", SA(ast->as.stringlit.tok.lexeme));
+    printf("\"AST_STRINGLIT\",");
+    printf("  \"value\": " SF, SA(ast->as.stringlit.tok.lexeme));
     break;
   case AST_BOOLLIT:
-    printf("\"AST_BOOLLIT\",\n");
-    printf("  \"value\": %s\n", ast->as.boollit.val ? "true" : "false");
+    printf("\"AST_BOOLLIT\",");
+    printf("  \"value\": %s", ast->as.boollit.val ? "true" : "false");
     break;
   case AST_FUNDEF: {
-    printf("\"AST_FUNDEF\",\n");
+    printf("\"AST_FUNDEF\",");
     printf("  \"name\": \"");
     print_token(ast->as.fundef.name);
     printf("\", ");
@@ -130,56 +130,56 @@ void dump_ast(ast_t *ast) {
       dump_ast(ast->as.fundef.param_types[i]);
       printf("}");
     }
-    printf("],\n");
+    printf("],");
     printf("\"body\": ");
     dump_ast(ast->as.fundef.body);
   } break;
   case AST_COMPOUND: {
-    printf("\"AST_COMPOUND\", \n");
-    printf("\"content\": [\n");
+    printf("\"AST_COMPOUND\",");
+    printf("\"content\": [");
     for (size_t i = 0; i < ast->as.compound.elem_count; ++i) {
       if (i > 0)
-        printf(",\n");
+        printf(",");
       dump_ast(ast->as.compound.elems[i]);
     }
-    printf("]\n");
+    printf("]");
   } break;
   case AST_FUNCALL: {
     printf("\"AST_FUNCALL\",");
-    printf("\"called\": \n\"");
-    print_token(ast->as.funcall.called);
-    printf("\", \"args\": [");
+    printf("\"called\":");
+    dump_ast(ast->as.funcall.called);
+    printf(", \"args\": [");
     for (size_t i = 0; i < ast->as.funcall.arg_count; i++) {
       if (i > 0) {
-        printf(",\n");
+        printf(",");
       }
       dump_ast(ast->as.funcall.args[i]);
     }
-    printf("]\n");
+    printf("]");
   } break;
   case AST_BINOP: {
-    printf("\"AST_BINOP\",\n");
+    printf("\"AST_BINOP\",");
     printf("\"operator\": \"");
     print_token(ast->as.binop.op);
-    printf("\",\n\"lhs\":");
+    printf("\",\"lhs\":");
     dump_ast(ast->as.binop.lhs);
-    printf(",\n\"rhs\":");
+    printf(",\"rhs\":");
     dump_ast(ast->as.binop.rhs);
   } break;
   case AST_VARDEF: {
-    printf("\"AST_VARDEF\", \n");
+    printf("\"AST_VARDEF\",");
     printf("\"name\": \"");
     print_token(ast->as.vardef.name);
     printf("\", \"type\":");
     dump_type(ast->as.vardef.type);
-    printf(",\n\"value\":");
+    printf(",\"value\":");
     dump_ast(ast->as.vardef.value);
   } break;
   case AST_CT_CTE: {
-    printf("\"AST_CT_CTE\", \n");
+    printf("\"AST_CT_CTE\",");
     printf("\"name\": \"");
     print_token(ast->as.ct_cte.name);
-    printf("\",\n\"value\":");
+    printf("\",\"value\":");
     dump_ast(ast->as.ct_cte.value);
   } break;
   case AST_METHOD: {
@@ -204,11 +204,47 @@ void dump_ast(ast_t *ast) {
     }
     printf("]");
   } break;
+  case AST_IFSTMT: {
+    printf("\"AST_IFSTMT\", ");
+    printf("\"cond\": ");
+    dump_ast(ast->as.if_stmt.cond);
+    printf(",\"if\": ");
+    dump_ast(ast->as.if_stmt.body);
+    printf(", \"else\": ");
+    dump_ast(ast->as.if_stmt.other_body);
+  } break;
+  case AST_INDEX: {
+    printf("\"AST_INDEX\",");
+    printf("\"subscripted\":");
+    dump_ast(ast->as.index.subscripted);
+    printf(", \"index\": ");
+    dump_ast(ast->as.index.index);
+  } break;
+  case AST_ASSIGN: {
+    printf("\"AST_ASSIGN\",");
+    printf("\"lhs\": ");
+    dump_ast(ast->as.assign.lhs);
+    printf(", \"rhs\": ");
+    dump_ast(ast->as.assign.rhs);
+  } break;
+
+  case AST_WHILE: {
+    printf("\"AST_WHILE\",");
+    printf("\"cond\": ");
+    dump_ast(ast->as.while_stmt.cond);
+    printf(", \"body\": ");
+    dump_ast(ast->as.while_stmt.body);
+  } break;
+  case AST_RETURN: {
+    printf("\"AST_RETURN\",");
+    printf("\"expr\": ");
+    dump_ast(ast->as.return_stmt.expr);
+  } break;
   default:
-    printf("\"UNKNOWN_KIND\"\n");
+    printf("\"UNKNOWN_KIND\"");
     break;
   }
-  printf("}\n");
+  printf("}");
 }
 
 void free_fundef(ast_t *ast) {
@@ -274,9 +310,28 @@ void free_ast(ast_t *ast) {
     printf("TODO AST_METHOD\n");
     exit(1);
   } break;
-
   case AST_CLASS: {
     printf("TODO AST_CLASS\n");
+    exit(1);
+  } break;
+  case AST_IFSTMT: {
+    printf("TODO: AST_IFSTMT\n");
+    exit(1);
+  } break;
+  case AST_INDEX: {
+    printf("TODO AST_INDEX\n");
+    exit(1);
+  } break;
+  case AST_WHILE: {
+    printf("TODO AST_WHILE\n");
+    exit(1);
+  } break;
+  case AST_ASSIGN: {
+    printf("TODO AST_ASSIGN\n");
+    exit(1);
+  } break;
+  case AST_RETURN: {
+    printf("TODO AST_RETURN\n");
     exit(1);
   } break;
   }
@@ -336,7 +391,7 @@ void free_compound(ast_t *ast) {
   // TODO
 }
 
-ast_t *new_funcall(token_t called, size_t arg_count, ast_t **args) {
+ast_t *new_funcall(ast_t *called, size_t arg_count, ast_t **args) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_FUNCALL;
   res->as.funcall = (ast_funcall_t){called, arg_count, args};
@@ -377,10 +432,16 @@ ast_t *new_ct_cte(token_t name, ast_t *value) {
   return res;
 }
 
-ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract) {
+ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract,
+                  int is_static) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_METHOD;
-  res->as.method = (ast_method_t){fdef, specifier, is_abstract};
+  res->as.method = (ast_method_t){
+      fdef,
+      specifier,
+      is_abstract,
+      is_static,
+  };
   return res;
 }
 
@@ -388,5 +449,40 @@ ast_t *new_class(token_t name, size_t field_count, ast_t **fields) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_CLASS;
   res->as.clazz = (ast_class_t){name, field_count, fields};
+  return res;
+}
+
+ast_t *new_if_stmt(ast_t *cond, ast_t *body, ast_t *other_body) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_IFSTMT;
+  res->as.if_stmt = (ast_if_stmt_t){cond, body, other_body};
+  return res;
+}
+
+ast_t *new_index(ast_t *subscripted, ast_t *index) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_INDEX;
+  res->as.index = (ast_index_t){subscripted, index};
+  return res;
+}
+
+ast_t *new_while_stmt(ast_t *cond, ast_t *body) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_WHILE;
+  res->as.while_stmt = (ast_while_t){cond, body};
+  return res;
+}
+
+ast_t *new_assignement(ast_t *lhs, ast_t *rhs) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_ASSIGN;
+  res->as.assign = (ast_assign_t){lhs, rhs};
+  return res;
+}
+
+ast_t *new_return(ast_t *expr) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_RETURN;
+  res->as.return_stmt = (ast_return_t){expr};
   return res;
 }

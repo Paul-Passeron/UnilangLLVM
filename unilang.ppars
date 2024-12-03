@@ -58,35 +58,44 @@ param: %identifier ':' %type => {
 
 arglist: @list elem=%param separator=','
 
-funcall: %identifier '(' %funcallargs ')' => {
-  ast_t *iden = %{0%};
-  ast_t ** elems = %{2%};
-  token_t name = iden->as.identifier.tok;
-  free_ast(iden);
-  size_t i = 0;
-  while(elems[i]){
-    i++;
-  }
-  elems = realloc(elems, sizeof(ast_t *) * i);
-  return new_funcall(name, i, elems); 
-}
+// funcall: %identifier '(' %funcallargs ')' => {
+//   ast_t *iden = %{0%};
+//   ast_t ** elems = %{2%};
+//   token_t name = iden->as.identifier.tok;
+//   free_ast(iden);
+//   size_t i = 0;
+//   while(elems[i]){
+//     i++;
+//   }
+//   elems = realloc(elems, sizeof(ast_t *) * i);
+//   return new_funcall(name, i, elems); 
+// }
+
 
 funcallargs: @list elem=%expr separator=','
 
 leaf:
   | %paren => { return %{0%}; }
-  | %funcall => { return %{0%}; }
   | %literal => { return %{0%}; }
   | %identifier => { return %{0%}; }
+  // | %funcall => { return %{0%}; }
+
 
 expr:
   | %binop => { return %{0%}; }
   | %leaf => { return %{0%}; }
 
+
 stmt: 
   | %expr ';' => { return %{0%}; }
   | %compound => { return %{0%}; }
   | %vardef => { return %{0%}; }
+  | %if_statement => { return %{0%}; }
+  | %while_stmt => { return %{0%}; }
+  | %assignement =>  { return %{0%}; }
+  | %return =>  { return %{0%}; }
+  
+
 decl:
   | %ct_cte => { return %{0%}; }
   | %fundef => { return %{0%}; }
@@ -114,7 +123,7 @@ type:
     while(starlist[count]){
       count++;
     }
-    fprintf(stderr, "count: %d\n", (int)count);
+
     for(size_t i = 0; i < count; ++i){
       free(starlist[i]);
     }
@@ -166,7 +175,7 @@ fundef_letless:
   }
   | %identifier '(' ')' ':' %type '=>' %compound => {
     ast_t *id = %{0%};
-    ast_t *type = %{5%};
+    ast_t *type = %{4%};
     tmp_param_t **tmp_arglist = malloc(sizeof(void*));
     tmp_arglist[0] = NULL;
     ast_t *stmt_list = %{6%};
@@ -175,12 +184,11 @@ fundef_letless:
     return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
   }
 
-fundef: 'let' %fundef_letless => { return %{0%}; }
+fundef: 'let' %fundef_letless => { return %{1%}; }
 
 uop: 
   | '-' => { return %{0%}; }
   | '!' => { return %{0%}; }
-
 
 vardef_letless: 
   | %identifier ':' %type '=>' %expr => {
@@ -220,20 +228,33 @@ abstract_opt:
     return NULL;
   }
 
+static_opt:
+  | 'static' => {
+    return %{0%};
+  }
+  | => {
+    *worked = 1;
+    (void)l;
+    return NULL;
+  }
+
+
 class_body: @list elem=%class_body_item separator=','
 
 class_body_item: 
-  | %abstract_opt %access_spec %fundef_letless => {
-    uintptr_t abstract_opt = (uintptr_t)%{0%};
+  | %abstract_opt %access_spec %static_opt %fundef_letless => {
     token_t *access_spec_ptr = %{1%};
     token_t access_spec = *access_spec_ptr;
+    uintptr_t abstract_opt = (uintptr_t)%{0%};
+    uintptr_t static_opt = (uintptr_t)%{2%};
     free(access_spec_ptr);
-    ast_t *fundef = %{2%};
-    return new_method(fundef, access_spec, abstract_opt != 0);
+    free(%{0%});
+    free(%{2%});
+    ast_t *fundef = %{3%};
+    return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
   }
-  | %access_spec %vardef_letless => {
-    // for the moment; fix it later
-    return %{1%};
+  | %access_spec %static_opt %vardef_letless => {
+    return %{2%};
   }
 
 class_decl: 'class' %identifier '=>' '{' %class_body '}' => {
@@ -248,3 +269,28 @@ class_decl: 'class' %identifier '=>' '{' %class_body '}' => {
   return new_class(name, count, body);
 }
 
+if_statement:
+  | 'if' %expr '=>' %stmt 'else' %stmt => {
+    ast_t *cond = %{1%};
+    ast_t *stmt1 = %{3%};
+    ast_t *stmt2 = %{5%};
+    return new_if_stmt(cond, stmt1, stmt2);
+  }
+  | 'if' %expr '=>' %stmt => {
+    ast_t *cond = %{1%};
+    ast_t *stmt1 = %{3%};
+    return new_if_stmt(cond, stmt1, NULL);
+  }
+
+while_stmt: 'while' %expr '=>' %stmt => {
+  return new_while_stmt(%{1%}, %{3%});
+}
+
+assignement: %expr '=>' %expr ';' => {
+  return new_assignement(%{0%}, %{2%});
+}
+
+
+return: 'return' %expr ';' => {
+  return new_return(%{1%});
+}
