@@ -254,3 +254,162 @@ bool matches_exact(const char *pattern, char *string, char **rest) {
   }
   return res;
 }
+
+bool sv_matches_exact(string_view_t pattern, string_view_t string,
+                      string_view_t *rest) {
+  *rest = string;
+  bool res;
+  int l;
+  sv_regexp(pattern, string, &res, &l);
+  if (res) {
+    *rest = (string_view_t){string.contents + l, string.length - l};
+  }
+  return res;
+}
+
+void sv_regexp(string_view_t pattern, string_view_t string,
+               bool *pattern_finished, int *string_matched) {
+  *pattern_finished = false;
+  *string_matched = 0;
+  size_t pat_index = 0;
+  size_t str_index = 0;
+  while (pat_index < pattern.length && str_index < string.length) {
+    char c = pattern.contents[pat_index];
+    if (c == '(') {
+      pat_index++;
+      size_t start_index = pat_index;
+      while (pat_index < pattern.length && pattern.contents[pat_index] != ')') {
+        pat_index++;
+      }
+      string_view_t sub_pat = (string_view_t){
+          .contents = pattern.contents + start_index,
+          .length = pat_index - start_index,
+      };
+      pat_index++;
+      while (true) {
+        bool finished = false;
+        int strmatched = 0;
+        string_view_t to_match = (string_view_t){
+            string.contents + str_index,
+            string.length - str_index,
+        };
+        sv_regexp(sub_pat, to_match, &finished, &strmatched);
+        if (!finished || str_index >= string.length) {
+          break;
+        }
+        str_index += strmatched;
+        *string_matched += strmatched;
+      }
+      continue;
+    } else if (c == '?') {
+      pat_index++;
+      str_index++;
+      *string_matched += 1;
+    } else if (c == '*') {
+      if (pat_index + 1 >= pattern.length) {
+        *pattern_finished = true;
+        *string_matched = string.length;
+        return;
+      }
+      size_t string_length = string.length - str_index;
+      for (size_t j = 0; j < string_length; j++) {
+        bool finished = false;
+        int string_match = 0;
+        string_view_t to_match =
+            (string_view_t){string.contents + str_index + j, string_length - j};
+        string_view_t new_pat = (string_view_t){
+            pattern.contents + pat_index + 1, pattern.length - pat_index - 1};
+        sv_regexp(new_pat, to_match, &finished, &string_match);
+        if (finished) {
+          *pattern_finished = true;
+          *string_matched += string_match + j;
+          return;
+        }
+        if (str_index + j >= string.length) {
+          *pattern_finished = false;
+          return;
+        }
+      }
+    } else if (c == '[') {
+      bool found = false;
+      pat_index++;
+      if (pat_index >= pattern.length || pattern.contents[pat_index] == ']') {
+        printf("Syntax error in regexp: [] without body\n");
+        exit(1);
+      }
+      do {
+        if (found) {
+          pat_index++;
+          continue;
+        }
+        int l = 0;
+        char start = get_actualchar(pattern.contents + pat_index, &l);
+        pat_index += l;
+        char delim = pattern.contents[pat_index];
+        if (start != delim && start == '-') {
+          if (string.contents[str_index] == '-') {
+            pat_index--;
+            found = true;
+            *string_matched += 1;
+            str_index++;
+            continue;
+          }
+          // return;
+        }
+        if (delim != '-') {
+          printf("Syntax error in regexp: Expected '-' delimeter in [] "
+                 "range.\n");
+          exit(1);
+        }
+        pat_index++;
+        if (pat_index >= pattern.length) {
+          printf("Syntax error in regexp: [ without ] in range.\n");
+          exit(1);
+        }
+        char end = get_actualchar(pattern.contents + pat_index, &l);
+
+        pat_index += l;
+        if (end == ']' || pat_index >= pattern.length) {
+          printf("Syntax error in regexp: No right part of range [].\n");
+          exit(1);
+        }
+        char s = string.contents[str_index];
+        if (s >= start && s <= end) {
+          found = true;
+          *string_matched += 1;
+          str_index++;
+          if (pat_index >= pattern.length) {
+            *pattern_finished = true;
+          }
+        }
+      } while (pat_index < pattern.length &&
+               pattern.contents[pat_index] != ']');
+      if (!found) {
+        return;
+      }
+      pat_index++;
+    } else {
+      bool worked;
+      int ammount;
+      match_single(pattern.contents + pat_index, string.contents + str_index,
+                   &worked, &ammount);
+      if (worked) {
+        str_index++;
+        *string_matched += 1;
+        pat_index += ammount;
+      } else {
+        return;
+      }
+    }
+  }
+  // why ?
+  while (pattern.contents[pat_index] == '(') {
+    while (pat_index < pattern.length && pattern.contents[pat_index] != ')') {
+      pat_index++;
+    }
+    pat_index++;
+  }
+  if (pat_index >= pattern.length) {
+    *pattern_finished = true;
+  }
+}

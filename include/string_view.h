@@ -30,8 +30,8 @@ char *sv_to_cstr(string_view_t s);
 
 // TODO: custom implementation that does not rely on sv_to_sctr.
 
-bool sv_matches_exact(string_view_t pattern, string_view_t string,
-                      string_view_t *rest);
+// bool sv_matches_exact(string_view_t pattern, string_view_t string,
+//                       string_view_t *rest);
 
 int length_until(string_view_t s, char c);
 

@@ -8,6 +8,7 @@
 #include "../include/ast.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 ast_t *new_identifier(token_t tok) {
   ast_t *res = malloc(sizeof(ast_t));
@@ -380,7 +381,9 @@ ast_t *new_compound(ast_t **elems) {
     count++;
   }
   ast_t *res = malloc(sizeof(ast_t));
-  ast_t **new_elems = realloc(elems, sizeof(ast_t *) * count);
+  ast_t **new_elems = malloc(sizeof(ast_t *) * count);
+  memcpy(new_elems, elems, sizeof(ast_t *) * count);
+  free(elems);
   res->kind = AST_COMPOUND;
   res->as.compound = (ast_compound_t){count, new_elems};
   return res;

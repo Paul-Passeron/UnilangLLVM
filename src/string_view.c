@@ -6,7 +6,6 @@
  */
 
 #include "../include/string_view.h"
-#include "../include/regexp.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,28 +18,38 @@ void sv_consume(string_view_t *s) {
   s->length--;
 }
 
+void FREE(void *ptr) {
+  printf("%p\n", ptr);
+  free(ptr);
+}
+
 char *sv_to_cstr(string_view_t s) {
-  char *res = malloc(s.length + 1);
+  char *res = calloc(s.length + 1, 1);
   for (size_t i = 0; i < s.length; i++) {
     res[i] = s.contents[i];
   }
   res[s.length] = 0;
   return res;
 }
-
+#if 0
 bool sv_matches_exact(string_view_t pattern, string_view_t string,
                       string_view_t *rest) {
 
-  char pat[1024] = {0};
+  char *pat = malloc(pattern.length + 1);
   memcpy(pat, pattern.contents, pattern.length);
-  char str[1024] = {0};
+  pat[pattern.length] = 0;
+  char *str = malloc(string.length + 1);
   memcpy(str, string.contents, string.length);
+  str[string.length] = 0;
   char *r;
   bool res = matches_exact(pat, str, &r);
   int l = strlen(r);
   *rest = (string_view_t){string.contents + (r - str), l};
+  FREE(pat);
+  FREE(str);
   return res;
 }
+#endif
 
 int length_until(string_view_t s, char c) {
   for (size_t i = 0; i < s.length; i++) {
