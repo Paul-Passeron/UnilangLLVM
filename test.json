@@ -100,20 +100,31 @@
       "name": "string",
       "fields": [
         {
-          "kind": "AST_VARDEF",
-          "name": "contents",
-          "type": "char*",
-          "value": null
+          "kind": "AST_MEMBER",
+          "static": "false",
+          "specifier": "public",
+          "var": {
+            "kind": "AST_VARDEF",
+            "name": "contents",
+            "type": "char*",
+            "value": null
+          }
         },
         {
-          "kind": "AST_VARDEF",
-          "name": "length",
-          "type": "int",
-          "value": null
+          "kind": "AST_MEMBER",
+          "static": "false",
+          "specifier": "public",
+          "var": {
+            "kind": "AST_VARDEF",
+            "name": "length",
+            "type": "int",
+            "value": null
+          }
         },
         {
           "kind": "AST_METHOD",
           "abstract": "false",
+          "static": "false",
           "specifier": "public",
           "fun": {
             "kind": "AST_FUNDEF",
@@ -177,6 +188,7 @@
         {
           "kind": "AST_METHOD",
           "abstract": "false",
+          "static": "false",
           "specifier": "public",
           "fun": {
             "kind": "AST_FUNDEF",

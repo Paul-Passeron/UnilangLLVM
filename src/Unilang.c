@@ -16,6 +16,17 @@ void usage(const char *str) {
   printf("Usage: %s [options] <input file>\n", str);
 }
 
+void dump_tokens(lexer_t l) {
+  lexer_t cpy = l;
+  while (!is_next(&cpy)) {
+    token_t tok = next(&cpy);
+    if (is_error_tok(tok))
+      break;
+    fdump_token(stderr, tok);
+    fprintf(stderr, "\n");
+  }
+}
+
 void print_cmd(int argc, char **argv) {
   printf("[CMD] ");
   for (int i = 0; i < argc; i++) {
@@ -77,14 +88,7 @@ int main(int argc, char **argv) {
   l.remaining = s;
   l.current_loc = (location_t){fn, 1, 1, false};
 
-  lexer_t cpy = l;
-  while (!is_next(&cpy)) {
-    token_t tok = next(&cpy);
-    if (is_error_tok(tok))
-      break;
-    fdump_token(stderr, tok);
-    fprintf(stderr, "\n");
-  }
+  // dump_tokens(l);
 
   int worked = 0;
   ast_t *prog = parse_program(&l, &worked);
@@ -96,8 +100,8 @@ int main(int argc, char **argv) {
     printf("NOOO\n");
   }
 
-  free(s.contents);
-  free(l.rules.data);
+  // free(s.contents);
+  // free(l.rules.data);
 
   return 0;
 }

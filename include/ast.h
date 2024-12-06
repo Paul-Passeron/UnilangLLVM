@@ -34,6 +34,7 @@ typedef enum ast_kind_t {
   AST_WHILE,
   AST_ASSIGN,
   AST_RETURN,
+  AST_MEMBER,
 } ast_kind_t;
 
 typedef struct ast_identifier_t {
@@ -141,6 +142,12 @@ typedef struct ast_return_t {
   ast_t *expr;
 } ast_return_t;
 
+typedef struct ast_member_t {
+  ast_t *var;
+  token_t specifier;
+  int is_static;
+} ast_member_t;
+
 typedef union ast_as_t {
   ast_identifier_t identifier;
   ast_floatlit_t floatlit;
@@ -164,6 +171,7 @@ typedef union ast_as_t {
   ast_assign_t assign;
   ast_while_t while_stmt;
   ast_return_t return_stmt;
+  ast_member_t member;
 } ast_as_t;
 
 struct ast_t {
@@ -185,6 +193,8 @@ ast_t *new_ct_cte(token_t name, ast_t *value);
 
 ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract,
                   int is_static);
+
+ast_t *new_member(ast_t *var, token_t specifier, int is_static);
 
 ast_t *new_class(token_t name, size_t field_count, ast_t **fields);
 

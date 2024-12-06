@@ -254,7 +254,14 @@ class_body_item:
     return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
   }
   | %access_spec %static_opt %vardef_letless => {
-    return %{2%};
+    token_t *access_spec_ptr = %{0%};
+    token_t access_spec = *access_spec_ptr;
+    free(access_spec_ptr);
+    ast_t *var = %{2%};
+    uintptr_t static_opt = (uintptr_t)%{1%};
+    int is_static = static_opt != 0;
+    free((void*)static_opt);
+    return new_member(var, access_spec, is_static);
   }
 
 class_decl: 'class' %identifier '=>' '{' %class_body '}' => {

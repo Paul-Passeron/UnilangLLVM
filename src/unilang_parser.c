@@ -1677,11 +1677,11 @@ void *parse_class_body_item_c0(lexer_t *l, int *worked) {
 }
 void *parse_class_body_item_c1(lexer_t *l, int *worked) {
   *worked = 0;
-  free(parse_access_spec(l, worked));
+  void *elem_0 = parse_access_spec(l, worked);
   if (!*worked) {
     return NULL;
   }
-  free(parse_static_opt(l, worked));
+  void *elem_1 = parse_static_opt(l, worked);
   if (!*worked) {
     return NULL;
   }
@@ -1690,7 +1690,14 @@ void *parse_class_body_item_c1(lexer_t *l, int *worked) {
     return NULL;
   }
 
-  return elem_2;
+  token_t *access_spec_ptr = elem_0;
+  token_t access_spec = *access_spec_ptr;
+  free(access_spec_ptr);
+  ast_t *var = elem_2;
+  uintptr_t static_opt = (uintptr_t)elem_1;
+  int is_static = static_opt != 0;
+  free((void *)static_opt);
+  return new_member(var, access_spec, is_static);
 }
 void *parse_class_decl_c0(lexer_t *l, int *worked) {
   *worked = 0;

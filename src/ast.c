@@ -187,11 +187,21 @@ void dump_ast(ast_t *ast) {
     printf("\"AST_METHOD\", ");
     printf("\"abstract\": \"%s\", ",
            ast->as.method.is_abstract ? "true" : "false");
+    printf("\"static\": \"%s\", ", ast->as.method.is_static ? "true" : "false");
     printf("\"specifier\": \"");
     print_token(ast->as.method.specifier);
     printf("\", ");
     printf("\"fun\": ");
     dump_ast(ast->as.method.fdef);
+  } break;
+  case AST_MEMBER: {
+    printf("\"AST_MEMBER\", ");
+    printf("\"static\": \"%s\", ", ast->as.member.is_static ? "true" : "false");
+    printf("\"specifier\": \"");
+    print_token(ast->as.method.specifier);
+    printf("\", ");
+    printf("\"var\": ");
+    dump_ast(ast->as.member.var);
   } break;
   case AST_CLASS: {
     printf("\"AST_CLASS\", ");
@@ -335,6 +345,10 @@ void free_ast(ast_t *ast) {
     printf("TODO AST_RETURN\n");
     exit(1);
   } break;
+  case AST_MEMBER: {
+    printf("TODO AST_MEMBER\n");
+    exit(1);
+  } break;
   }
 }
 
@@ -443,6 +457,17 @@ ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract,
       fdef,
       specifier,
       is_abstract,
+      is_static,
+  };
+  return res;
+}
+
+ast_t *new_member(ast_t *fdef, token_t specifier, int is_static) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_MEMBER;
+  res->as.member = (ast_member_t){
+      fdef,
+      specifier,
       is_static,
   };
   return res;
