@@ -1,11 +1,12 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -g
-LIBS=
+LIBS=-I/usr/include -std=c++17   -fno-exceptions -funwind-tables -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/usr/lib64  -lLLVM-18
+
 SRC=src/
 BUILD=build/
 BIN=bin/
 
-DEPS=  $(BUILD)Unilang.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o $(BUILD)unilang_lexer.o $(BUILD)parser.o $(BUILD)ast.o $(BUILD)parser_helper.o $(BUILD)unilang_parser.o
+DEPS=  $(BUILD)Unilang.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o $(BUILD)unilang_lexer.o $(BUILD)parser.o $(BUILD)ast.o $(BUILD)parser_helper.o $(BUILD)generator.o $(BUILD)unilang_parser.o
 all: init lines Unilang
 lines:
 	@echo "C:"

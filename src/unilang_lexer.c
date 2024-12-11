@@ -54,7 +54,6 @@ lexer_t new_unilang_lexer() {
   add_rule_to_lexer(&l, SV("\\]"), CLOSE_SQR);
   add_rule_to_lexer(&l, SV("{"), OPEN_BRA);
   add_rule_to_lexer(&l, SV("}"), CLOSE_BRA);
-  // add_rule_to_lexer(&l, SV("."), DOT);
   add_rule_to_lexer(&l, SV("->"), SMALL_ARR);
   add_rule_to_lexer(&l, SV("0b[0-1]([0-1])"), INTLIT);
   add_rule_to_lexer(&l, SV("0x[0-9a-fA-F]([0-9a-fA-F])"), INTLIT);
@@ -62,6 +61,10 @@ lexer_t new_unilang_lexer() {
   add_rule_to_lexer(&l, SV("[0-9]([0-9]).[0-9]([0-9])"), FLOATLIT);
   add_rule_to_lexer(&l, SV("[0-9]([0-9])f"), FLOATLIT);
   add_rule_to_lexer(&l, SV("[0-9]([0-9])"), INTLIT);
+  add_rule_to_lexer(&l, SV("-[0-9]([0-9]).[0-9]([0-9])f"), FLOATLIT);
+  add_rule_to_lexer(&l, SV("-[0-9]([0-9]).[0-9]([0-9])"), FLOATLIT);
+  add_rule_to_lexer(&l, SV("-[0-9]([0-9])f"), FLOATLIT);
+  add_rule_to_lexer(&l, SV("-[0-9]([0-9])"), INTLIT);
   add_rule_to_lexer(&l, SV("-"), MINUS);
   add_rule_to_lexer(&l, SV(","), COMMA);
   add_rule_to_lexer(&l, SV("[a-zA-Z_-_]([a-zA-Z_-_0-9])"), IDENTIFIER);

@@ -5,9 +5,11 @@
  * Paul Passeron <paul.passeron2@gmail.com>
  */
 
+#include "../include/generator.h"
 #include "../include/string_view.h"
 #include "../include/unilang_lexer.h"
 #include "../include/unilang_parser.h"
+#include <llvm-c/Core.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,6 +101,20 @@ int main(int argc, char **argv) {
   } else {
     printf("NOOO\n");
   }
+
+  generator_t g;
+  init(&g, "main");
+
+  // for (size_t i = 0; i < g.nb_types; i++) {
+  //   printf("%s: ", g.types[i].name);
+  //   fflush(stdout);
+  //   LLVMDumpType(g.types[i].type);
+  //   printf("\n");
+  // }
+
+  printf("*******************\n");
+  fflush(stdout);
+  generate_program(&g, prog);
 
   // free(s.contents);
   // free(l.rules.data);
