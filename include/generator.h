@@ -14,6 +14,7 @@
 #include <llvm-c/Types.h>
 
 #define INIT_TYPES_CAP 16
+#define INIT_NAMED_VALUES_CAP 16
 
 typedef struct type_t {
   int is_ptr;
@@ -29,6 +30,11 @@ typedef struct generator_t {
 
   LLVMValueRef current_function;
   LLVMTypeRef current_function_type;
+
+  LLVMValueRef *named_values_vals;
+  char **named_values_names;
+  size_t named_values_count;
+  size_t named_values_cap;
 
   type_t *types;
   size_t nb_types;

@@ -6,6 +6,7 @@
  */
 
 #include "../include/generator.h"
+#include "../include/unilang_lexer.h"
 #include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
@@ -18,20 +19,20 @@
 #include <string.h>
 
 void addBuiltinTypes(generator_t *g) {
-  add_type(g, "int", LLVMInt32Type());
-  add_type(g, "char", LLVMInt8Type());
+  add_type(g, "int", LLVMInt32TypeInContext(g->context));
+  add_type(g, "char", LLVMInt8TypeInContext(g->context));
 
-  add_type(g, "i64", LLVMInt64Type());
-  add_type(g, "i32", LLVMInt32Type());
-  add_type(g, "i16", LLVMInt16Type());
-  add_type(g, "i8", LLVMInt8Type());
+  add_type(g, "i64", LLVMInt64TypeInContext(g->context));
+  add_type(g, "i32", LLVMInt32TypeInContext(g->context));
+  add_type(g, "i16", LLVMInt16TypeInContext(g->context));
+  add_type(g, "i8", LLVMInt8TypeInContext(g->context));
 
-  add_unsigned_type(g, "u64", LLVMInt64Type());
-  add_unsigned_type(g, "u32", LLVMInt32Type());
-  add_unsigned_type(g, "u16", LLVMInt16Type());
-  add_unsigned_type(g, "u8", LLVMInt8Type());
+  add_unsigned_type(g, "u64", LLVMInt64TypeInContext(g->context));
+  add_unsigned_type(g, "u32", LLVMInt32TypeInContext(g->context));
+  add_unsigned_type(g, "u16", LLVMInt16TypeInContext(g->context));
+  add_unsigned_type(g, "u8", LLVMInt8TypeInContext(g->context));
 
-  add_type(g, "void", LLVMVoidType());
+  add_type(g, "void", LLVMVoidTypeInContext(g->context));
 }
 
 void add_actual_type(generator_t *g, type_t t) {
@@ -63,7 +64,55 @@ void init(generator_t *g, const char *module_name) {
   g->types = malloc(sizeof(type_t) * g->cap_types);
   g->nb_types = 0;
 
+  g->named_values_cap = INIT_NAMED_VALUES_CAP;
+  g->named_values_vals = malloc(sizeof(LLVMValueRef) * g->named_values_cap);
+  g->named_values_names = malloc(sizeof(char *) * g->named_values_cap);
+  g->named_values_count = 0;
+
   addBuiltinTypes(g);
+}
+
+int get_named_values_scope(generator_t *g) { return g->named_values_count; }
+
+void reset_named_values_to_scope(generator_t *g, int scope) {
+  for (int i = g->named_values_count - 1; i >= scope; i--) {
+    free(g->named_values_names[i]);
+  }
+  g->named_values_count = scope;
+}
+
+void push_named_value(generator_t *g, LLVMValueRef value, const char *name) {
+  if (g->named_values_count >= g->named_values_cap) {
+    LLVMValueRef *new_values =
+        malloc(g->named_values_cap * 2 * sizeof(LLVMValueRef));
+    char **new_names = malloc(g->named_values_cap * 2 * sizeof(char *));
+    memcpy(new_values, g->named_values_vals,
+           g->named_values_cap * sizeof(LLVMValueRef));
+    memcpy(new_names, g->named_values_names,
+           g->named_values_cap * sizeof(char *));
+    free(g->named_values_vals);
+    free(g->named_values_names);
+    g->named_values_vals = new_values;
+    g->named_values_names = new_names;
+  }
+  g->named_values_vals[g->named_values_count] = value;
+  g->named_values_names[g->named_values_count] = strdup(name);
+  g->named_values_count++;
+}
+
+void overwrite_pushed_value(generator_t *g, LLVMValueRef new_value,
+                            char *name) {
+  bool worked = false;
+  for (int i = g->named_values_count - 1; i >= 0; --i) {
+    if (strcmp(g->named_values_names[i], name) == 0) {
+      g->named_values_vals[i] = new_value;
+      worked = true;
+      break;
+    }
+  }
+  if (!worked) {
+    push_named_value(g, new_value, name);
+  }
 }
 
 void add_type(generator_t *g, const char *name, LLVMTypeRef type) {
@@ -125,6 +174,15 @@ void generate_program(generator_t *g, ast_t *program) {
   }
 }
 
+int get_named_value(generator_t *g, char *name) {
+  for (size_t i = 0; i < g->named_values_count; ++i) {
+    if (strcmp(g->named_values_names[i], name) == 0) {
+      return (int)i;
+    }
+  }
+  return -1;
+}
+
 void generate_function(generator_t *g, ast_t *fun) {
   ast_fundef_t f = fun->as.fundef;
   string_view_t svn = f.name.lexeme;
@@ -136,12 +194,23 @@ void generate_function(generator_t *g, ast_t *fun) {
   for (size_t i = 0; i < f.param_count; ++i) {
     types[i] = get_type_from_ast(g, f.param_types[i]);
     param_types[i] = types[i].type;
-    // LLVMDumpType(param_types[i]);
   }
   LLVMTypeRef fun_type = LLVMFunctionType(r, param_types, f.param_count, false);
   LLVMValueRef func = LLVMAddFunction(g->module, name, fun_type);
   g->current_function = func;
   g->current_function_type = fun_type;
+
+  int scope = get_named_values_scope(g);
+
+  // LLVMGetParam(func, 0)
+
+  for (size_t i = 0; i < f.param_count; i++) {
+    LLVMValueRef param = LLVMGetParam(func, i);
+    char *name = strndup(f.param_names[i].lexeme.contents,
+                         f.param_names[i].lexeme.length);
+    push_named_value(g, param, name);
+  }
+
   LLVMBasicBlockRef entry = LLVMAppendBasicBlock(g->current_function, "entry");
   LLVMPositionBuilderAtEnd(g->builder, entry);
   for (size_t i = 0; i < f.body->as.compound.elem_count; i++) {
@@ -151,6 +220,9 @@ void generate_function(generator_t *g, ast_t *fun) {
   free(types);
   free(param_types);
   free(name);
+
+  reset_named_values_to_scope(g, scope);
+
   LLVMDumpValue(func);
 }
 
@@ -169,16 +241,52 @@ int token_to_int(token_t tok) {
   return res * mult;
 }
 
+LLVMValueRef generate_intlit(generator_t *g, token_t tok, type_t type) {
+  (void)g;
+  return LLVMConstInt(type.type, token_to_int(tok), type.is_signed);
+}
+
+LLVMValueRef generate_binop(generator_t *g, token_t op, LLVMValueRef left,
+                            LLVMValueRef right) {
+  //
+  switch (op.kind) {
+  case PLUS: {
+    return LLVMBuildAdd(g->builder, left, right, "");
+  } break;
+  default: {
+    printf("Unsupported operator: " SF "\n", SA(op.lexeme));
+    exit(1);
+  }
+  }
+}
+
 LLVMValueRef generate_expression_with_type(generator_t *g, ast_t *expr,
                                            type_t type) {
   (void)g;
   switch (expr->kind) {
   case AST_INTLIT: {
-    return LLVMConstInt(type.type, token_to_int(expr->as.intlit.tok),
-                        type.is_signed);
+    return generate_intlit(g, expr->as.intlit.tok, type);
+  } break;
+  case AST_BINOP: {
+    LLVMValueRef left =
+        generate_expression_with_type(g, expr->as.binop.lhs, type);
+    LLVMValueRef right =
+        generate_expression_with_type(g, expr->as.binop.rhs, type);
+    return generate_binop(g, expr->as.binop.op, left, right);
+  } break;
+  case AST_IDENTIFIER: {
+    string_view_t sv = expr->as.identifier.tok.lexeme;
+    char *name = strndup(sv.contents, sv.length);
+    int named_index = get_named_value(g, name);
+    if (named_index < 0) {
+      printf("Identifier %s not found in the scope\n", name);
+      exit(1);
+    }
+    free(name);
+    return g->named_values_vals[named_index];
   } break;
   default: {
-    printf("Unsupported expression\n");
+    printf("Unsupported expression %d\n", expr->kind);
     exit(1);
   } break;
   }
@@ -202,11 +310,14 @@ void generate_return(generator_t *g, ast_t *expr) {
 void generate_statement(generator_t *g, ast_t *stmt) {
   switch (stmt->kind) {
   case AST_COMPOUND: {
-    // TODO: save generator state and restore it afterwards, for scope purposes
+    // DONE: save generator state and restore it afterwards, for scope
+    // purposes
+    int scope = get_named_values_scope(g);
     ast_compound_t c = stmt->as.compound;
     for (size_t i = 0; i < c.elem_count; i++) {
       generate_statement(g, c.elems[i]);
     }
+    reset_named_values_to_scope(g, scope);
   } break;
   case AST_RETURN: {
     generate_return(g, stmt->as.return_stmt.expr);

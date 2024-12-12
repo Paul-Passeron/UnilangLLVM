@@ -9,6 +9,7 @@
 #include "../include/string_view.h"
 #include "../include/unilang_lexer.h"
 #include "../include/unilang_parser.h"
+#include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,8 +96,8 @@ int main(int argc, char **argv) {
   int worked = 0;
   ast_t *prog = parse_program(&l, &worked);
   if (worked) {
-    dump_ast(prog);
-    printf("\n");
+    // dump_ast(prog);
+    // printf("\n");
     // free_ast(prog);
   } else {
     printf("NOOO\n");
@@ -112,12 +113,16 @@ int main(int argc, char **argv) {
   //   printf("\n");
   // }
 
-  printf("*******************\n");
-  fflush(stdout);
+  // printf("*******************\n");
+  // fflush(stdout);
   generate_program(&g, prog);
 
   // free(s.contents);
   // free(l.rules.data);
+
+  char *error = NULL;
+  LLVMVerifyModule(g.module, LLVMPrintMessageAction, &error);
+  LLVMDisposeMessage(error);
 
   return 0;
 }
