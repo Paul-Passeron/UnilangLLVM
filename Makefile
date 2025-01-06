@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -g
-LIBS=-I/usr/include -std=c++17   -fno-exceptions -funwind-tables -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/usr/lib64  -lLLVM-18
+LIBS=-I/usr/include -fno-exceptions -funwind-tables -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -L/usr/lib64 -lLLVM
 
 SRC=src/
 BUILD=build/

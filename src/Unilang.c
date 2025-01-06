@@ -95,31 +95,16 @@ int main(int argc, char **argv) {
 
   int worked = 0;
   ast_t *prog = parse_program(&l, &worked);
-  if (worked) {
-    // dump_ast(prog);
-    // printf("\n");
-    // free_ast(prog);
-  } else {
-    printf("NOOO\n");
+  if (!worked) {
+    printf("Parsing failed\n");
+    exit(1);
   }
-
+  dump_ast(prog);
+  printf("\n");
   generator_t g;
   init(&g, "main");
 
-  // for (size_t i = 0; i < g.nb_types; i++) {
-  //   printf("%s: ", g.types[i].name);
-  //   fflush(stdout);
-  //   LLVMDumpType(g.types[i].type);
-  //   printf("\n");
-  // }
-
-  // printf("*******************\n");
-  // fflush(stdout);
   generate_program(&g, prog);
-
-  // free(s.contents);
-  // free(l.rules.data);
-
   char *error = NULL;
   LLVMVerifyModule(g.module, LLVMPrintMessageAction, &error);
   LLVMDisposeMessage(error);

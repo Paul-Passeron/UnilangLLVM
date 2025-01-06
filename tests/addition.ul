@@ -2,19 +2,27 @@ let add(a: int, b: int): int => {
     return a+b;
 }
 
-
 let add_chars(first: u8, second: u8): u8 => {
     return first + second;    
 }
 
-// TODO: make implicit type casts. fir the moment this 
-// crashes
-/*
- * let add_mismatched(a: i32, b: u8): i32 => {
- *     return a + b;
- * }
-*/
+let add_mismatched(a: i32, b: u8): i32 => {
+    return a + b;
+}
 
 let triple_sum(a: int, b: int, c: int): int => {
     return a + b + c;
+}
+
+let param_overwrite(x: int, z: int): int => {
+    let x: int => 7;
+    {
+        let y: int => x + z;
+        x => y;
+    }
+    return x * z;
+}
+
+let nested_test(): int => {
+    {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{return 4;}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 }

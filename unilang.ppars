@@ -58,48 +58,34 @@ param: %identifier ':' %type => {
 
 arglist: @list elem=%param separator=','
 
-// funcall: %identifier '(' %funcallargs ')' => {
-//   ast_t *iden = %{0%};
-//   ast_t ** elems = %{2%};
-//   token_t name = iden->as.identifier.tok;
-//   free_ast(iden);
-//   size_t i = 0;
-//   while(elems[i]){
-//     i++;
-//   }
-//   elems = realloc(elems, sizeof(ast_t *) * i);
-//   return new_funcall(name, i, elems); 
-// }
-
-
 funcallargs: @list elem=%expr separator=','
 
 leaf:
-  | %paren => { return %{0%}; }
-  | %literal => { return %{0%}; }
+  | %paren      => { return %{0%}; }
+  | %literal    => { return %{0%}; }
   | %identifier => { return %{0%}; }
-  // | %funcall => { return %{0%}; }
+  | %unary      => { return %{0%}; }
 
 
 expr:
-  | %binop => { return %{0%}; }
-  | %leaf => { return %{0%}; }
+  | %binop   => { return %{0%}; }
+  | %leaf    => { return %{0%}; }
 
 
 stmt: 
-  | %expr ';' => { return %{0%}; }
-  | %compound => { return %{0%}; }
-  | %vardef => { return %{0%}; }
+  | %expr ';'     => { return %{0%}; }
+  | %compound     => { return %{0%}; }
+  | %vardef       => { return %{0%}; }
   | %if_statement => { return %{0%}; }
-  | %while_stmt => { return %{0%}; }
-  | %assignement =>  { return %{0%}; }
-  | %return =>  { return %{0%}; }
+  | %while_stmt   => { return %{0%}; }
+  | %assignement  => { return %{0%}; }
+  | %return       => { return %{0%}; }
   
 
 decl:
-  | %ct_cte => { return %{0%}; }
-  | %fundef => { return %{0%}; }
-  | %vardef => { return %{0%}; }
+  | %ct_cte     => { return %{0%}; }
+  | %fundef     => { return %{0%}; }
+  | %vardef     => { return %{0%}; }
   | %class_decl => { return %{0%}; }
 
 binop: => {
@@ -297,7 +283,8 @@ assignement: %expr '=>' %expr ';' => {
   return new_assignement(%{0%}, %{2%});
 }
 
-
-return: 'return' %expr ';' => {
-  return new_return(%{1%});
-}
+return: 
+  | 'return' %expr ';' => {
+    return new_return(%{1%});
+  }
+  | 'return' ';' => { return new_return(NULL); }

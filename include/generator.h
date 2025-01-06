@@ -15,13 +15,18 @@
 
 #define INIT_TYPES_CAP 16
 #define INIT_NAMED_VALUES_CAP 16
-
-typedef struct type_t {
+#define INIT_FUNCS_CAP 16
+#define INIT_CLASSES_CAP 16
+typedef struct type_t type_t;
+struct type_t {
   int is_ptr;
   int is_signed;
+  int is_class;
   const char *name;
   LLVMTypeRef type;
-} type_t;
+  ast_t *classdecl;
+  type_t *pointed_to;
+};
 
 typedef struct generator_t {
   LLVMContextRef context;
@@ -32,6 +37,7 @@ typedef struct generator_t {
   LLVMTypeRef current_function_type;
 
   LLVMValueRef *named_values_vals;
+  type_t *named_values_types;
   char **named_values_names;
   size_t named_values_count;
   size_t named_values_cap;
@@ -39,6 +45,14 @@ typedef struct generator_t {
   type_t *types;
   size_t nb_types;
   size_t cap_types;
+
+  ast_t **funcs;
+  size_t funcs_count;
+  size_t funcs_cap;
+
+  // ast_t **classes;
+  // size_t classes_count;
+  // size_t classes_cap;
 
 } generator_t;
 
@@ -70,5 +84,18 @@ type_t from_llvm(LLVMTypeRef t);
 bool is_llvm_pointer_type(LLVMTypeRef t);
 
 type_t get_named_from_llvm(generator_t *g, LLVMTypeRef t);
+
+ast_t *get_function_ast_from_name(generator_t *g, char *fname);
+
+void add_function_ast(generator_t *g, ast_t *fun);
+
+bool is_integer_type(generator_t *g, type_t t);
+
+void push_named_value(generator_t *g, LLVMValueRef value, const char *name,
+                      type_t t);
+
+LLVMTypeRef generate_funtype(generator_t *g, ast_t *fun);
+
+type_t get_type_from_expr(generator_t *g, ast_t *expr);
 
 #endif // GENERATOR_H

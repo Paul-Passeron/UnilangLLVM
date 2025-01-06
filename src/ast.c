@@ -251,6 +251,13 @@ void dump_ast(ast_t *ast) {
     printf("\"expr\": ");
     dump_ast(ast->as.return_stmt.expr);
   } break;
+  case AST_UNOP: {
+    printf("\"AST_UNOP\",");
+    printf("\"op\": ");
+    printf("\"" SF "\"", SA(ast->as.unop.op.lexeme));
+    printf(", \"operand\": ");
+    dump_ast(ast->as.unop.operand);
+  } break;
   default:
     printf("\"UNKNOWN_KIND\"");
     break;

@@ -1,0 +1,11 @@
+class Bar => {
+  private m: int
+}
+
+let test(b: Bar): int => {
+  return b::m;
+}
+
+let test2(b: Bar*): int => {
+  return b::m;
+}

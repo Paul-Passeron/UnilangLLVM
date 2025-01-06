@@ -1,0 +1,88 @@
+{
+  "kind": "AST_COMPOUND",
+  "content": [
+    {
+      "kind": "AST_CLASS",
+      "name": "Bar",
+      "fields": [
+        {
+          "kind": "AST_MEMBER",
+          "static": "false",
+          "specifier": "private",
+          "var": {
+            "kind": "AST_VARDEF",
+            "name": "m",
+            "type": "int",
+            "value": null
+          }
+        }
+      ]
+    },
+    {
+      "kind": "AST_FUNDEF",
+      "name": "method_test",
+      "return_type": "int",
+      "params": [
+        {
+          "name": "b",
+          "type": "Bar"
+        }
+      ],
+      "body": {
+        "kind": "AST_COMPOUND",
+        "content": [
+          {
+            "kind": "AST_RETURN",
+            "expr": {
+              "kind": "AST_FUNCALL",
+              "called": {
+                "kind": "AST_BINOP",
+                "operator": "::",
+                "lhs": {
+                  "kind": "AST_IDENTIFIER",
+                  "value": "b"
+                },
+                "rhs": {
+                  "kind": "AST_IDENTIFIER",
+                  "value": "m"
+                }
+              },
+              "args": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "AST_FUNDEF",
+      "name": "test",
+      "return_type": "int",
+      "params": [
+        {
+          "name": "b",
+          "type": "Bar"
+        }
+      ],
+      "body": {
+        "kind": "AST_COMPOUND",
+        "content": [
+          {
+            "kind": "AST_RETURN",
+            "expr": {
+              "kind": "AST_BINOP",
+              "operator": "::",
+              "lhs": {
+                "kind": "AST_IDENTIFIER",
+                "value": "b"
+              },
+              "rhs": {
+                "kind": "AST_IDENTIFIER",
+                "value": "m"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

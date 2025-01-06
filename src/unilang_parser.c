@@ -70,6 +70,8 @@ void *parse_leaf_c1(lexer_t *l, int *worked);
 
 void *parse_leaf_c2(lexer_t *l, int *worked);
 
+void *parse_leaf_c3(lexer_t *l, int *worked);
+
 // RULE expr
 void *parse_expr_c0(lexer_t *l, int *worked);
 
@@ -185,6 +187,8 @@ void *parse_assignement_c0(lexer_t *l, int *worked);
 
 // RULE return
 void *parse_return_c0(lexer_t *l, int *worked);
+
+void *parse_return_c1(lexer_t *l, int *worked);
 
 // RULE identifier
 void *parse_identifier(lexer_t *l, int *worked) {
@@ -411,6 +415,13 @@ void *parse_leaf(lexer_t *l, int *worked) {
   }
   rule_cpy = *l;
   rule_res = parse_leaf_c2(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_leaf_c3(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -1016,6 +1027,13 @@ void *parse_return(lexer_t *l, int *worked) {
     *l = rule_cpy;
     return rule_res;
   }
+  rule_cpy = *l;
+  rule_res = parse_return_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
   return NULL;
 }
 
@@ -1165,6 +1183,14 @@ void *parse_leaf_c1(lexer_t *l, int *worked) {
 void *parse_leaf_c2(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_identifier(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_leaf_c3(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_unary(l, worked);
   if (!*worked) {
     return NULL;
   }
@@ -1849,4 +1875,16 @@ void *parse_return_c0(lexer_t *l, int *worked) {
   }
 
   return new_return(elem_1);
+}
+void *parse_return_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("return")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV(";")));
+  if (!*worked) {
+    return NULL;
+  }
+  return new_return(NULL);
 }
