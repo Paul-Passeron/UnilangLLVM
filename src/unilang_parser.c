@@ -58,6 +58,8 @@ void *parse_literal_c2(lexer_t *l, int *worked);
 
 void *parse_literal_c3(lexer_t *l, int *worked);
 
+void *parse_literal_c4(lexer_t *l, int *worked);
+
 // RULE param
 void *parse_param_c0(lexer_t *l, int *worked);
 
@@ -139,6 +141,8 @@ void *parse_uop_c0(lexer_t *l, int *worked);
 
 void *parse_uop_c1(lexer_t *l, int *worked);
 
+void *parse_uop_c2(lexer_t *l, int *worked);
+
 // RULE vardef_letless
 void *parse_vardef_letless_c0(lexer_t *l, int *worked);
 
@@ -166,10 +170,17 @@ void *parse_static_opt_c0(lexer_t *l, int *worked);
 void *parse_static_opt_c1(lexer_t *l, int *worked);
 
 // RULE class_body
+// RULE class_constructor
+void *parse_class_constructor_c0(lexer_t *l, int *worked);
+
+void *parse_class_constructor_c1(lexer_t *l, int *worked);
+
 // RULE class_body_item
 void *parse_class_body_item_c0(lexer_t *l, int *worked);
 
 void *parse_class_body_item_c1(lexer_t *l, int *worked);
+
+void *parse_class_body_item_c2(lexer_t *l, int *worked);
 
 // RULE class_decl
 void *parse_class_decl_c0(lexer_t *l, int *worked);
@@ -315,6 +326,13 @@ void *parse_literal(lexer_t *l, int *worked) {
   }
   rule_cpy = *l;
   rule_res = parse_literal_c3(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_literal_c4(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -777,6 +795,13 @@ void *parse_uop(lexer_t *l, int *worked) {
     *l = rule_cpy;
     return rule_res;
   }
+  rule_cpy = *l;
+  rule_res = parse_uop_c2(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
   return NULL;
 }
 
@@ -926,6 +951,28 @@ void *parse_class_body(lexer_t *l, int *worked) {
   *worked = count > 0;
   return elems;
 }
+// RULE class_constructor
+void *parse_class_constructor(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_class_constructor_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_class_constructor_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
 // RULE class_body_item
 void *parse_class_body_item(lexer_t *l, int *worked) {
   *worked = 0;
@@ -940,6 +987,13 @@ void *parse_class_body_item(lexer_t *l, int *worked) {
   }
   rule_cpy = *l;
   rule_res = parse_class_body_item_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_class_body_item_c2(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -1140,6 +1194,14 @@ void *parse_literal_c2(lexer_t *l, int *worked) {
 void *parse_literal_c3(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_stringlit(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_literal_c4(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_boollit(l, worked);
   if (!*worked) {
     return NULL;
   }
@@ -1535,6 +1597,14 @@ void *parse_uop_c1(lexer_t *l, int *worked) {
   }
   return elem_0;
 }
+void *parse_uop_c2(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_token_lexeme(l, worked, SV("$"));
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
 void *parse_vardef_letless_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_identifier(l, worked);
@@ -1672,6 +1742,71 @@ void *parse_static_opt_c1(lexer_t *l, int *worked) {
   (void)l;
   return NULL;
 }
+void *parse_class_constructor_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_identifier(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("(")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_2 = parse_arglist(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV(")")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_5 = parse_compound(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *id = elem_0;
+  tmp_param_t **tmp_arglist = elem_2;
+  ast_t *stmt_list = elem_5;
+  token_t tok = id->as.identifier.tok;
+  free_ast(id);
+  return new_fundef_from_parser(tok, tmp_arglist, stmt_list, NULL);
+}
+void *parse_class_constructor_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_identifier(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("(")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV(")")));
+  if (!*worked) {
+    return NULL;
+  }
+  free(parse_token_lexeme(l, worked, SV("=>")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_4 = parse_compound(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  ast_t *id = elem_0;
+  tmp_param_t **tmp_arglist = malloc(sizeof(void *));
+  tmp_arglist[0] = NULL;
+  ast_t *stmt_list = elem_4;
+  token_t tok = id->as.identifier.tok;
+  free_ast(id);
+  return new_fundef_from_parser(tok, tmp_arglist, stmt_list, NULL);
+}
 void *parse_class_body_item_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_abstract_opt(l, worked);
@@ -1702,6 +1837,35 @@ void *parse_class_body_item_c0(lexer_t *l, int *worked) {
   return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
 }
 void *parse_class_body_item_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_abstract_opt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_access_spec(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_2 = parse_static_opt(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_3 = parse_class_constructor(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  token_t *access_spec_ptr = elem_1;
+  token_t access_spec = *access_spec_ptr;
+  uintptr_t abstract_opt = (uintptr_t)elem_0;
+  uintptr_t static_opt = (uintptr_t)elem_2;
+  free(access_spec_ptr);
+  free(elem_0);
+  free(elem_2);
+  ast_t *fundef = elem_3;
+  return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
+}
+void *parse_class_body_item_c2(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_access_spec(l, worked);
   if (!*worked) {

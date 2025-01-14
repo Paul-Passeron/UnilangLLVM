@@ -1,0 +1,20 @@
+class string => {
+  public contents: char *,
+  public string() => {},
+  public init(str: char *): void => {
+    self::contents => str;
+    return;
+  },
+  public print(): void => {
+    put_string(self::contents);
+    return;
+  }
+}
+
+let main(): int => {
+  let s: string;
+  s::init("Hello, World!");
+  s::print();
+  return 0;
+}
+

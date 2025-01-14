@@ -49,6 +49,7 @@ literal:
   | %floatlit => { return %{0%}; }
   | %charlit => { return %{0%}; }
   | %stringlit => { return %{0%}; }
+  | %boollit => { return %{0%}; }
 
 param: %identifier ':' %type => {
   ast_t *id = %{0%};
@@ -175,6 +176,7 @@ fundef: 'let' %fundef_letless => { return %{1%}; }
 uop: 
   | '-' => { return %{0%}; }
   | '!' => { return %{0%}; }
+  | '$' => { return %{0%}; }
 
 vardef_letless: 
   | %identifier ':' %type '=>' %expr => {
@@ -227,8 +229,38 @@ static_opt:
 
 class_body: @list elem=%class_body_item separator=','
 
+class_constructor:
+| %identifier '(' %arglist ')' '=>' %compound => {
+    ast_t *id = %{0%};
+    tmp_param_t **tmp_arglist = %{2%};
+    ast_t *stmt_list = %{5%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, NULL);
+  }
+  | %identifier '(' ')' '=>' %compound => {
+    ast_t *id = %{0%};
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *stmt_list = %{4%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, NULL);
+  }
+
 class_body_item: 
   | %abstract_opt %access_spec %static_opt %fundef_letless => {
+    token_t *access_spec_ptr = %{1%};
+    token_t access_spec = *access_spec_ptr;
+    uintptr_t abstract_opt = (uintptr_t)%{0%};
+    uintptr_t static_opt = (uintptr_t)%{2%};
+    free(access_spec_ptr);
+    free(%{0%});
+    free(%{2%});
+    ast_t *fundef = %{3%};
+    return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
+  }
+  | %abstract_opt %access_spec %static_opt %class_constructor => {
     token_t *access_spec_ptr = %{1%};
     token_t access_spec = *access_spec_ptr;
     uintptr_t abstract_opt = (uintptr_t)%{0%};

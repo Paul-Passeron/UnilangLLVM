@@ -1,11 +1,76 @@
 class Bar => {
-  private m: int
+  public m: int,
+  public method(): int => {
+    return self::m;
+  },
+  public Bar(x: int) => {
+    self::m => x;
+  }
 }
 
 let test(b: Bar): int => {
   return b::m;
 }
 
-let test2(b: Bar*): int => {
-  return b::m;
+// let test2(b: Bar*): int => {
+//   return b::m;
+// }
+
+// let test3(b: Bar*): void => {
+//   b::m => 3;
+//   return;
+// }
+
+let incr(b: Bar*): int => {
+  let new_val: int => (b::m) + 1;
+  b::m => new_val;
+  return new_val;
+}
+
+let incr_local(b: Bar): int => {
+  b::m => b::m + 1;
+  return 7 * b::m;
+}
+
+let incr_returned(b: Bar): Bar => {
+  b::m => b::m + 1;
+  return b;
+}
+
+class inner => {
+  public mem: int 
+}
+
+class outer => {
+  public inner: inner,
+}
+
+let multi(o: outer *, x: int): void => {
+  o::inner::mem => x;
+  return;
+}
+
+class LinkedList => {
+  public m: int,
+  public next: LinkedList*
+}
+
+let getNext(l: LinkedList): LinkedList => {
+  let ptr: LinkedList * => l::next;
+  return $ptr;
+}
+
+let deref(x: int *): int => {
+  return $x;
+}
+
+class A => {
+  public member: int,
+  public method(): void => {
+    return;
+  }
+}
+
+let fun(): void => {
+  return;
 }

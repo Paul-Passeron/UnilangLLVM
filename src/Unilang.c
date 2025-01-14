@@ -11,6 +11,9 @@
 #include "../include/unilang_parser.h"
 #include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
+#include <llvm-c/Support.h>
+#include <llvm-c/Target.h>
+#include <llvm-c/TargetMachine.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,8 +94,6 @@ int main(int argc, char **argv) {
   l.remaining = s;
   l.current_loc = (location_t){fn, 1, 1, false};
 
-  // dump_tokens(l);
-
   int worked = 0;
   ast_t *prog = parse_program(&l, &worked);
   if (!worked) {
@@ -102,12 +103,46 @@ int main(int argc, char **argv) {
   dump_ast(prog);
   printf("\n");
   generator_t g;
-  init(&g, "main");
+  generator_init(&g);
 
-  generate_program(&g, prog);
+  generate_program(prog);
+  fflush(stdout);
+
+  LLVMDumpModule(g.module);
+
   char *error = NULL;
-  LLVMVerifyModule(g.module, LLVMPrintMessageAction, &error);
+  if (LLVMVerifyModule(g.module, LLVMPrintMessageAction, &error)) {
+    printf("Error in generated LLVM code: %s\n", error);
+  }
   LLVMDisposeMessage(error);
 
+  char *triple = LLVMGetDefaultTargetTriple();
+  LLVMTargetRef target;
+  char *err = NULL;
+
+  if (LLVMGetTargetFromTriple(triple, &target, &err)) {
+    fprintf(stderr, "Error getting target: %s\n", err);
+    LLVMDisposeMessage(err);
+    return 1;
+  }
+
+  LLVMTargetMachineRef target_machine = LLVMCreateTargetMachine(
+      target, triple,
+      "generic", // CPU type
+      "",        // Features
+      LLVMCodeGenLevelDefault, LLVMRelocDefault, LLVMCodeModelDefault);
+
+  LLVMDisposeMessage(triple);
+
+  char *filename = "tests/output.s";
+  if (LLVMTargetMachineEmitToFile(target_machine, g.module, filename,
+                                  LLVMAssemblyFile, &error)) {
+    fprintf(stderr, "Error emitting assembly: %s\n", error);
+    LLVMDisposeMessage(error);
+    return 1;
+  }
+
+  printf("\n");
+  printf("\n");
   return 0;
 }

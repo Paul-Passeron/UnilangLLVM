@@ -22,4 +22,6 @@ bool matches_exact(const char *pattern, char *string, char **rest);
 bool sv_matches_exact(string_view_t pattern, string_view_t string,
                       string_view_t *rest);
 
+char *unescape_string(const char *input);
+
 #endif // REGEXP_H

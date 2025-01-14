@@ -13,9 +13,10 @@ ast_t *new_binop(token_t tok, ast_t *lhs, ast_t *rhs);
 
 int get_precedence_aux(int kind) {
   switch (kind) {
-
+  case DEREF:
+    return 0;
   case ACCESS:
-    return 12;
+    return 1;
   case MULT:
   case DIV:
   case MODULO:
@@ -57,8 +58,21 @@ int get_precedence(int kind) {
   return 14 - res;
 }
 
+bool is_prefix(token_kind_t kind) {
+  switch (kind) {
+  case PLUS:
+  case MINUS:
+  case DEREF:
+  case NOT:
+    return true;
+  default:
+    return false;
+  }
+}
+
 bool is_kind_op(const int kind) {
-  return get_precedence(kind) != -1 && kind != OPEN_PAR && kind != OPEN_SQR;
+  return get_precedence(kind) != -1 && kind != OPEN_PAR && kind != OPEN_SQR &&
+         kind != DEREF;
 }
 
 bool is_postfix(lexer_t *l) {
@@ -96,10 +110,24 @@ ast_t *parse_funcall(lexer_t *l, ast_t *called) {
   return new_funcall(called, count, elems);
 }
 
+ast_t *parse_prefix(lexer_t *l) {
+  token_t tok = peek_token(l);
+  if (!is_prefix(tok.kind)) {
+    return NULL;
+  }
+  next(l);
+  ast_t *operand = parse_expression_aux(l, get_precedence(tok.kind));
+  if (!operand) {
+    return NULL;
+  }
+
+  return new_unop(tok, operand);
+}
+
 ast_t *parse_postfix(lexer_t *l, ast_t *left) {
   token_t tok = next(l);
   if (is_error_tok(tok))
-    return left; // ignore error
+    return left;
   if (tok.kind == OPEN_PAR) {
     return parse_funcall(l, left);
   } else if (tok.kind == OPEN_SQR) {
@@ -115,13 +143,25 @@ ast_t *parse_postfix(lexer_t *l, ast_t *left) {
   }
   return left;
 }
+
 ast_t *parse_expression_aux(lexer_t *l, int min_precedence) {
   int worked = 0;
-  ast_t *left = parse_leaf(l, &worked);
-  if (!worked) {
-    return NULL;
-  }
+  ast_t *left;
+
   token_t tok = peek_token(l);
+  if (is_prefix(tok.kind)) {
+    left = parse_prefix(l);
+    if (!left) {
+      worked = 0;
+      return NULL; // Error in parsing prefix expression
+    }
+  } else {
+    left = parse_leaf(l, &worked);
+    if (!worked) {
+      return NULL; // Error in parsing leaf expression
+    }
+  }
+  tok = peek_token(l);
   if (is_error_tok(tok)) {
     return NULL;
   }

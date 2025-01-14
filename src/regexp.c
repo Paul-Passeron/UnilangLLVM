@@ -413,3 +413,43 @@ void sv_regexp(string_view_t pattern, string_view_t string,
     *pattern_finished = true;
   }
 }
+
+char *unescape_string(const char *input) {
+  if (!input)
+    return NULL;
+
+  // Allocate enough space for the output string (at most as long as input)
+  size_t len = strlen(input);
+  char *output = (char *)malloc(len + 1); // +1 for null terminator
+  if (!output)
+    return NULL;
+
+  size_t out_idx = 0; // Output index
+
+  for (size_t i = 0; i < len; ++i) {
+    if (input[i] == '\\' && i + 1 < len) {
+      switch (input[i + 1]) {
+      case 'n':
+        output[out_idx++] = '\n';
+        break;
+      case 't':
+        output[out_idx++] = '\t';
+        break;
+      case 'r':
+        output[out_idx++] = '\r';
+        break;
+      case 'b':
+        output[out_idx++] = '\b';
+        break;
+      default:
+        output[out_idx++] = input[i];
+        break;
+      }
+      ++i; // Skip the next character
+    } else {
+      output[out_idx++] = input[i];
+    }
+  }
+  output[out_idx] = '\0';
+  return output;
+}

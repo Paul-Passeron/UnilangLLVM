@@ -117,9 +117,11 @@ void dump_ast(ast_t *ast) {
     printf("  \"name\": \"");
     print_token(ast->as.fundef.name);
     printf("\", ");
-    printf("\"return_type\": ");
-    dump_type(ast->as.fundef.return_type);
-    printf(", ");
+    if (ast->as.fundef.return_type) {
+      printf("\"return_type\": ");
+      dump_type(ast->as.fundef.return_type);
+      printf(", ");
+    }
     printf("\"params\": [");
     for (size_t i = 0; i < ast->as.fundef.param_count; ++i) {
       if (i > 0) {

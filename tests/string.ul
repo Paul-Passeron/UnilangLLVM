@@ -1,0 +1,35 @@
+class string => {
+  public contents: char *,
+  public string(s: char *) => {
+    self::contents => s;
+  },
+  public string(b: bool) => {
+    if b => self::contents => "true";
+    else self::contents => "false";
+  },
+  public string() => {
+    self::contents => "";
+  },
+  public print(): void => {
+    put_string(self::contents);
+  },
+  public println(): void => {
+    self::print();
+    put_character(10);
+  }
+}
+
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  put_character(x % 10 + 48);
+}
+
+let exit(code: int): void => {
+  syscall(60, code);
+}
+
+let main(): int => {
+  exit(1554);
+  return 0;
+}

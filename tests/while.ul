@@ -1,0 +1,22 @@
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  put_character(x % 10 + 48);
+}
+
+
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while $s => {
+    res => res + 1;
+    s => s + 1;
+  }
+  return res;
+}
+
+let main(): int => {
+  let i: int => 10;
+  print_int(strlen("Hello, my name is Paul !\n"));
+  put_character(10);
+  return 0; 
+}

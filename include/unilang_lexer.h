@@ -56,6 +56,7 @@ typedef enum token_kind_t {
   MINUS,
   COMMA,
   IDENTIFIER,
+  DEREF
 } token_kind_t;
 
 lexer_t new_unilang_lexer();

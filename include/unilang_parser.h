@@ -110,6 +110,9 @@ void *parse_static_opt(lexer_t *l, int *worked);
 // RULE class_body
 void *parse_class_body(lexer_t *l, int *worked);
 
+// RULE class_constructor
+void *parse_class_constructor(lexer_t *l, int *worked);
+
 // RULE class_body_item
 void *parse_class_body_item(lexer_t *l, int *worked);
 

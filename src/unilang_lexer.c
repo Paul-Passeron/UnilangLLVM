@@ -48,6 +48,7 @@ lexer_t new_unilang_lexer() {
   add_rule_to_lexer(&l, SV("|"), BIT_OR);
   add_rule_to_lexer(&l, SV("^"), BIT_XOR);
   add_rule_to_lexer(&l, SV("!"), NOT);
+  add_rule_to_lexer(&l, SV("$"), DEREF);
   add_rule_to_lexer(&l, SV("\\("), OPEN_PAR);
   add_rule_to_lexer(&l, SV("\\)"), CLOSE_PAR);
   add_rule_to_lexer(&l, SV("\\["), OPEN_SQR);
