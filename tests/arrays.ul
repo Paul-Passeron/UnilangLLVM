@@ -19,32 +19,6 @@ let print_int(x: int): void => {
   printc(x % 10 + 48);
 }
 
-
-class string => {
-  public contents: char *,
-  public string(s: char *) => {
-    self::contents => s;
-  },
-  public string(b: bool) => {
-    if b => self::contents => "true";
-    else self::contents => "false";
-  },
-  public string(i: int) => {
-    self::contents => "number";
-  },
-  public string() => {
-    self::contents => "";
-  },
-  public print(): void => {
-    print(self::contents);
-  },
-  public println(): void => {
-    self::print();
-    printc(10);
-  }
-}
-
-
 let nl(): void => {
   printc(10);
 }
@@ -71,3 +45,4 @@ let main(): int => {
   array_test(20);
   return 0;
 }
+

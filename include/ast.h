@@ -35,6 +35,8 @@ typedef enum ast_kind_t {
   AST_ASSIGN,
   AST_RETURN,
   AST_MEMBER,
+  AST_AS_DIR,
+  AST_NEW_DIR,
 } ast_kind_t;
 
 typedef struct ast_identifier_t {
@@ -148,6 +150,13 @@ typedef struct ast_member_t {
   int is_static;
 } ast_member_t;
 
+typedef struct ast_as_dir_t {
+  ast_t *type;
+  ast_t *expr;
+} ast_as_dir_t;
+
+typedef ast_as_dir_t ast_new_dir_t;
+
 typedef union ast_as_t {
   ast_identifier_t identifier;
   ast_floatlit_t floatlit;
@@ -172,6 +181,8 @@ typedef union ast_as_t {
   ast_while_t while_stmt;
   ast_return_t return_stmt;
   ast_member_t member;
+  ast_as_dir_t as_dir;
+  ast_new_dir_t new_dir;
 } ast_as_t;
 
 struct ast_t {
@@ -239,6 +250,12 @@ void free_intlit(ast_t *iden);
 
 ast_t *new_boollit(int val);
 void free_boollit(ast_t *iden);
+
+ast_t *new_as_dir(ast_t *type, ast_t *expr);
+void free_as_dir(ast_t *ast);
+
+ast_t *new_new_dir(ast_t *type, ast_t *expr);
+void free_new_dir(ast_t *ast);
 
 void dump_ast(ast_t *ast);
 void free_ast(ast_t *ast);

@@ -14,6 +14,7 @@
 #include <llvm-c/Target.h>
 #include <llvm-c/Transforms/PassBuilder.h>
 #include <llvm-c/Types.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,7 @@ type_t get_ptr_of(type_t t) {
   res.type = LLVMPointerType(t.type, 0);
   res.name = NULL;
   res.kind = PTR;
-  res.as.pointed_by = ptr;
+  res.pointed_by = ptr;
   return res;
 }
 
@@ -74,18 +75,18 @@ void add_named_value(named_value_entry_t n) {
 }
 
 void add_builtin_types() {
-  type_t int_t = {"int", BUILTIN, LLVMInt32TypeInContext(gen->context), {0}};
-  type_t char_t = {"char", BUILTIN, LLVMInt8TypeInContext(gen->context), {0}};
-  type_t i64_t = {"i64", BUILTIN, LLVMInt64TypeInContext(gen->context), {0}};
-  type_t i32_t = {"i32", BUILTIN, LLVMInt32TypeInContext(gen->context), {0}};
-  type_t i16_t = {"i16", BUILTIN, LLVMInt16TypeInContext(gen->context), {0}};
-  type_t i8_t = {"i8", BUILTIN, LLVMInt8TypeInContext(gen->context), {0}};
-  type_t u64_t = {"u64", BUILTIN, LLVMInt64TypeInContext(gen->context), {0}};
-  type_t u32_t = {"u32", BUILTIN, LLVMInt32TypeInContext(gen->context), {0}};
-  type_t u16_t = {"u16", BUILTIN, LLVMInt16TypeInContext(gen->context), {0}};
-  type_t u8_t = {"u8", BUILTIN, LLVMInt8TypeInContext(gen->context), {0}};
-  type_t void_t = {"void", BUILTIN, LLVMVoidTypeInContext(gen->context), {0}};
-  type_t bool_t = {"bool", BUILTIN, LLVMInt1TypeInContext(gen->context), {0}};
+  type_t int_t = {"int", BUILTIN, LLVMInt32TypeInContext(gen->context), 0};
+  type_t char_t = {"char", BUILTIN, LLVMInt8TypeInContext(gen->context), 0};
+  type_t i64_t = {"i64", BUILTIN, LLVMInt64TypeInContext(gen->context), 0};
+  type_t i32_t = {"i32", BUILTIN, LLVMInt32TypeInContext(gen->context), 0};
+  type_t i16_t = {"i16", BUILTIN, LLVMInt16TypeInContext(gen->context), 0};
+  type_t i8_t = {"i8", BUILTIN, LLVMInt8TypeInContext(gen->context), 0};
+  type_t u64_t = {"u64", BUILTIN, LLVMInt64TypeInContext(gen->context), 0};
+  type_t u32_t = {"u32", BUILTIN, LLVMInt32TypeInContext(gen->context), 0};
+  type_t u16_t = {"u16", BUILTIN, LLVMInt16TypeInContext(gen->context), 0};
+  type_t u8_t = {"u8", BUILTIN, LLVMInt8TypeInContext(gen->context), 0};
+  type_t void_t = {"void", BUILTIN, LLVMVoidTypeInContext(gen->context), 0};
+  type_t bool_t = {"bool", BUILTIN, LLVMInt1TypeInContext(gen->context), 0};
 
   add_type(int_t);
   add_type(char_t);
@@ -121,6 +122,16 @@ function_entry_t get_putchar() {
   return res;
 }
 
+function_entry_t get_malloc() {
+  strings ss = {0};
+  types ts = {0};
+  da_append(&ss, "size");
+  type_t void_ptr_t = get_ptr_of(get_type_from_name("void"));
+  da_append(&ts, get_ptr_of(void_ptr_t));
+  function_entry_t res = {"malloc", ss, ts, void_ptr_t, 0};
+  return res;
+}
+
 function_entry_t get_syscall() {
   strings ss = {0};
   types ts = {0};
@@ -131,13 +142,23 @@ function_entry_t get_syscall() {
   return res;
 }
 
+function_entry_t get_free() {
+  strings ss = {0};
+  types ts = {0};
+  type_t void_t = get_type_from_name("void");
+  da_append(&ss, "ptr");
+  da_append(&ts, get_ptr_of(void_t));
+  function_entry_t res = {"free", ss, ts, void_t, 0};
+  return res;
+}
+
 void add_builtin_functions() {
-  function_entry_t ps = get_putstring();
-  function_entry_t pc = get_putchar();
   function_entry_t sc = get_syscall();
-  add_function(ps);
-  add_function(pc);
+  function_entry_t mc = get_malloc();
+  function_entry_t fr = get_free();
   add_function(sc);
+  add_function(mc);
+  add_function(fr);
   for (size_t i = 0; i < gen->functions.count; ++i) {
     function_entry_t f = gen->functions.items[i];
     LLVMAddFunction(gen->module, f.name, ftype_from_entry(f));
@@ -158,7 +179,11 @@ void generator_init(generator_t *g) {
   g->named_values = (named_values){0};
   g->classes = (classes){0};
   g->types = (types){0};
+  g->defers = (defers){0};
   g->current_function = NULL;
+  g->current_ptr = NULL;
+  g->current_function_scope = 0;
+  g->is_new = 0;
 
   set_global_generator(g);
 
@@ -166,10 +191,43 @@ void generator_init(generator_t *g) {
   add_builtin_functions();
 }
 
-int get_named_values_scope() { return gen->named_values.count; }
+int get_named_values_scope() {
+  int res = gen->named_values.count;
+  named_value_entry_t dummy = {strdup(""), get_type_from_name("void"), NULL};
+  add_named_value(dummy);
+  return res;
+}
+
+void generate_defer(defer_elem_t elem) {
+  if (elem.t.kind != CLASS) {
+    // maybe I should just do nothing in this case
+    printf("Can only defer classes. Here: %s\n",
+           elem.t.kind == BUILTIN ? "builtin" : "ptr");
+    printf("\n");
+    exit(1);
+  }
+  class_entry_t c = get_class_by_name(elem.t.name);
+  method_t m = get_method_by_name(c, "destroy");
+  LLVMValueRef fptr = fptr_from_method(m, c);
+  LLVMTypeRef ftype = ftype_from_method(m, c);
+  LLVMValueRef args[] = {elem.ptr};
+  LLVMDumpValue(args[0]);
+  LLVMBuildCall2(gen->builder, ftype, fptr, args, 1, "");
+}
+
+void generate_defers(int scope) {
+  if (gen->defers.count > 0) {
+    printf("There are %ld values to defer\n", gen->defers.count);
+    while (gen->defers.items[gen->defers.count - 1].scope > scope) {
+      printf("DEFERING\n");
+      generate_defer(gen->defers.items[--gen->defers.count]);
+    }
+  }
+}
 
 void reset_named_values_to_scope(int scope) {
-  for (int i = gen->named_values.count - 1; i >= scope; i--) {
+  generate_defers(scope);
+  for (int i = gen->named_values.count - 1; i > scope; i--) {
     free(gen->named_values.items[i].name);
   }
   gen->named_values.count = scope;
@@ -340,6 +398,7 @@ void generate_function_body(function_entry_t entry, ast_t *body) {
   LLVMPositionBuilderAtEnd(gen->builder, bb_entry);
 
   int scope = get_named_values_scope();
+  gen->current_function_scope = scope;
 
   push_params(entry, fptr);
 
@@ -379,7 +438,6 @@ LLVMValueRef generate_stringlit(token_t tok) {
   actual.length = tok.lexeme.length - 2;
   char *cstr = strndup(actual.contents, actual.length);
   char *cstr2 = unescape_string(cstr);
-  printf("Printing string %s\n", cstr2);
   LLVMValueRef str = LLVMBuildGlobalStringPtr(gen->builder, cstr2, "");
   free(cstr);
   free(cstr2);
@@ -420,6 +478,16 @@ method_t get_method_by_name(class_entry_t cdef, const char *name) {
   exit(1);
 }
 
+class_entry_t get_class_by_name(const char *name) {
+  for (size_t i = 0; i < gen->classes.count; i++) {
+    if (strcmp(gen->classes.items[i].name, name) == 0) {
+      return gen->classes.items[i];
+    }
+  }
+  printf("No class named %s found.\n", name);
+  exit(1);
+}
+
 type_t get_return_type(ast_t *funcall) {
   if (funcall->as.funcall.called->kind == AST_IDENTIFIER) {
     function_entry_t entry = get_global_function(funcall->as.funcall.called);
@@ -442,7 +510,8 @@ type_t get_return_type(ast_t *funcall) {
       printf("error: cannot call non-class method\n");
       exit(1);
     }
-    class_entry_t cdef = *t.as.clazz;
+
+    class_entry_t cdef = get_class_by_name(t.name);
     if (called->as.binop.rhs->kind != AST_IDENTIFIER) {
       printf("error: cannot call method with non-identifier name\n");
       exit(1);
@@ -500,7 +569,7 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
       exit(1);
     }
 
-    class_entry_t cdef = *t.as.clazz;
+    class_entry_t cdef = get_class_by_name(t.name);
     if (called->as.binop.rhs->kind != AST_IDENTIFIER) {
       printf("error: cannot call method with non-identifier name\n");
       exit(1);
@@ -565,7 +634,7 @@ type_t t_of_expr(ast_t *expr) {
         printf("Cannot access field of non-class type %s\n", lhs.name);
         exit(1);
       }
-      class_entry_t c = *lhs.as.clazz;
+      class_entry_t c = get_class_by_name(lhs.name);
       if (expr->as.binop.rhs->kind != AST_IDENTIFIER) {
         printf("Expected identifier for field name\n");
         exit(1);
@@ -618,6 +687,23 @@ type_t t_of_expr(ast_t *expr) {
     printf("%s:%d TODO: get type of unop\n", __FILE__, __LINE__);
     exit(1);
   } break;
+  case AST_AS_DIR:
+  case AST_NEW_DIR: {
+    type_t t = get_type_from_ast(expr->as.as_dir.type);
+    printf("AS TYPE IS ");
+    fflush(stdout);
+    LLVMDumpType(t.type);
+    fflush(stdout);
+    printf("\n");
+    fflush(stdout);
+    return t;
+  } break;
+  case AST_INDEX: {
+    return dereference_type(t_of_expr(expr->as.index.subscripted));
+  }
+  case AST_CHARLIT: {
+    return get_type_from_name("char");
+  } break;
   default: {
     printf("%s:%d TODO: get type of expression %d\n", __FILE__, __LINE__,
            expr->kind);
@@ -661,6 +747,30 @@ LLVMValueRef generate_binop(ast_t *binop) {
   } break;
   case MODULO: {
     res = LLVMBuildSRem(gen->builder, lhs, rhs, "");
+  } break;
+  case LT: {
+    res = LLVMBuildICmp(gen->builder, LLVMIntSLT, lhs, rhs, "");
+  } break;
+  case GT: {
+    res = LLVMBuildICmp(gen->builder, LLVMIntSGT, lhs, rhs, "");
+  } break;
+  case LEQ: {
+    res = LLVMBuildICmp(gen->builder, LLVMIntSLE, lhs, rhs, "");
+  } break;
+  case GEQ: {
+    res = LLVMBuildICmp(gen->builder, LLVMIntSGE, lhs, rhs, "");
+  } break;
+  case EQ: {
+    res = LLVMBuildICmp(gen->builder, LLVMIntEQ, lhs, rhs, "");
+  } break;
+  case DIFF: {
+    res = LLVMBuildICmp(gen->builder, LLVMIntNE, lhs, rhs, "");
+  } break;
+  case AND: {
+    res = LLVMBuildAnd(gen->builder, lhs, rhs, "");
+  } break;
+  case OR: {
+    res = LLVMBuildOr(gen->builder, lhs, rhs, "");
   } break;
   default: {
     printf("%s:%d TODO: generate binary operation %d\n", __FILE__, __LINE__,
@@ -715,8 +825,44 @@ LLVMValueRef generate_unop(ast_t *expr) {
   if (expr->as.unop.op.kind == DEREF) {
     return generate_deref(expr);
   }
+  if (expr->as.unop.op.kind == BIT_AND) {
+    return get_lm_pointer(expr->as.unop.operand);
+  }
   printf("%s:%d TODO: generate_unop.\n", __FILE__, __LINE__);
   exit(1);
+}
+
+LLVMValueRef generate_index(ast_t *expr) {
+  ast_t *lhs = expr->as.index.subscripted;
+  ast_t *rhs = expr->as.index.index;
+  type_t base = t_of_expr(lhs);
+  type_t actual = dereference_type(base);
+  LLVMValueRef lhs_ptr = generate_expression(lhs);
+  LLVMValueRef rhs_val = generate_expression(rhs);
+  LLVMValueRef res =
+      LLVMBuildGEP2(gen->builder, actual.type, lhs_ptr, &rhs_val, 1, "");
+  res = LLVMBuildLoad2(gen->builder, actual.type, res, "");
+  return res;
+}
+
+LLVMValueRef generate_as_dir(ast_t *expr) {
+  type_t to_cast = t_of_expr(expr);
+  LLVMValueRef res = generate_expression(expr->as.as_dir.expr);
+  res = generate_cast(res, to_cast);
+  return res;
+}
+
+LLVMValueRef generate_new_dir(ast_t *expr) {
+  type_t to_cast = t_of_expr(expr);
+  LLVMValueRef current_ptr = gen->current_ptr;
+  int is_new = gen->is_new;
+  gen->current_ptr = NULL;
+  gen->is_new = 1;
+  LLVMValueRef res = generate_expression(expr->as.new_dir.expr);
+  res = generate_cast(res, to_cast);
+  gen->current_ptr = current_ptr;
+  gen->is_new = is_new;
+  return res;
 }
 
 LLVMValueRef generate_expression(ast_t *expr) {
@@ -756,6 +902,27 @@ LLVMValueRef generate_expression(ast_t *expr) {
   case AST_UNOP: {
     return generate_unop(expr);
   }
+  case AST_INDEX: {
+    return generate_index(expr);
+  }
+  case AST_AS_DIR: {
+    return generate_as_dir(expr);
+  }
+  case AST_NEW_DIR: {
+    return generate_new_dir(expr);
+  }
+  case AST_CHARLIT: {
+    string_view_t lit = expr->as.charlit.tok.lexeme;
+    lit.contents++;
+    lit.length -= 2;
+    char *cstr = sv_to_cstr(lit);
+    char *cstr2 = unescape_string(cstr);
+    char c = cstr2[0];
+    free(cstr);
+    free(cstr2);
+    LLVMValueRef res = LLVMConstInt(get_type_from_name("char").type, c, 0);
+    return res;
+  }
   default:
     printf("%s:%d TODO: generate_expression %d\n", __FILE__, __LINE__,
            expr->kind);
@@ -778,12 +945,16 @@ void generate_ifstmt(ast_t *if_stmt) {
   LLVMBuildCondBr(gen->builder, cond, then_block, else_block);
   LLVMPositionBuilderAtEnd(gen->builder, then_block);
   generate_statement(if_stmt->as.if_stmt.body);
-  LLVMBuildBr(gen->builder, merge_block);
+  if (LLVMGetBasicBlockTerminator(then_block) == NULL) {
+    LLVMBuildBr(gen->builder, merge_block);
+  }
   LLVMPositionBuilderAtEnd(gen->builder, else_block);
   if (if_stmt->as.if_stmt.other_body) {
     generate_statement(if_stmt->as.if_stmt.other_body);
   }
-  LLVMBuildBr(gen->builder, merge_block);
+  if (LLVMGetBasicBlockTerminator(else_block) == NULL) {
+    LLVMBuildBr(gen->builder, merge_block);
+  }
   LLVMPositionBuilderAtEnd(gen->builder, merge_block);
 }
 void generate_whilestmt(ast_t *while_stmt) {
@@ -807,7 +978,9 @@ void generate_whilestmt(ast_t *while_stmt) {
   LLVMBuildCondBr(gen->builder, cond_expr, bb_body, bb_after);
   LLVMPositionBuilderAtEnd(gen->builder, bb_body);
   generate_statement(body);
-  LLVMBuildBr(gen->builder, bb_cond);
+  if (LLVMGetBasicBlockTerminator(bb_body) == NULL) {
+    LLVMBuildBr(gen->builder, bb_cond);
+  }
   LLVMPositionBuilderAtEnd(gen->builder, bb_after);
 }
 
@@ -822,8 +995,6 @@ type_t t_from_cdef(class_entry_t cdef) {
   LLVMStructSetBody(str, mems.items, mems.count, 0);
   da_free(mems);
   t.kind = CLASS;
-  t.as.clazz = malloc(sizeof(class_entry_t));
-  *t.as.clazz = cdef;
   t.type = str;
   t.name = cdef.name;
   return t;
@@ -869,6 +1040,9 @@ LLVMTypeRef ftype_from_method(method_t method, class_entry_t cdef) {
   da_append(&ts, get_ptr_of(self).type);
   for (size_t j = 0; j < method.arg_names.count; j++) {
     type_t t = method.arg_types.items[j];
+    if (t.name == NULL) {
+      t = get_type_from_name(cdef.name);
+    }
     da_append(&ts, t.type);
   }
   LLVMTypeRef ftype =
@@ -897,7 +1071,7 @@ void declare_methods(class_entry_t cdef) {
 void push_method_params(method_t method, LLVMValueRef fptr) {
   for (size_t j = 0; j < method.arg_names.count; j++) {
     type_t t = method.arg_types.items[j];
-    LLVMValueRef param = LLVMGetParam(fptr, j);
+    LLVMValueRef param = LLVMGetParam(fptr, j + 1);
     char *name = strdup(method.arg_names.items[j]);
     LLVMSetValueName(param, name);
     LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, t.type, "ptr");
@@ -917,6 +1091,7 @@ void generate_method(method_t method, class_entry_t cdef, ast_t *m) {
   da_append(&names, strdup("self"));
   da_append(&types, get_type_from_name(cdef.name));
   for (size_t j = 0; j < method.arg_names.count; j++) {
+    printf("TYPE: %s\n", method.arg_types.items[j].name);
     da_append(&types, method.arg_types.items[j]);
     da_append(&names, method.arg_names.items[j]);
   }
@@ -936,6 +1111,7 @@ void generate_method(method_t method, class_entry_t cdef, ast_t *m) {
       self,
   };
   int scope = get_named_values_scope();
+  gen->current_function_scope = scope;
   add_named_value(self_entry);
   push_method_params(method, fptr);
   generate_compound(m->as.method.fdef->as.fundef.body);
@@ -1001,6 +1177,7 @@ void generate_constructor(constructor_t c, class_entry_t cdef, int index,
       self,
   };
   int scope = get_named_values_scope();
+  gen->current_function_scope = scope;
   add_named_value(self_entry);
   push_constructor_params(c, fptr);
   generate_compound(body);
@@ -1012,8 +1189,7 @@ void generate_constructor(constructor_t c, class_entry_t cdef, int index,
 
 void generate_classdef(ast_t *classdef) {
   class_entry_t cdef = entry_from_cdef(classdef->as.clazz);
-  type_t t = t_from_cdef(cdef);
-  add_type(t);
+  add_class(cdef);
   declare_constructors(cdef);
   declare_methods(cdef);
   int method_count = 0;
@@ -1041,7 +1217,7 @@ type_t dereference_type(type_t t) {
     printf("Cannot dereference non-pointer type\n");
     exit(1);
   }
-  return *t.as.pointed_by;
+  return *t.pointed_by;
 }
 
 LLVMValueRef get_lm_pointer(ast_t *lm) {
@@ -1068,7 +1244,7 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
         printf("Cannot get access lm pointer from non-class type\n");
         exit(1);
       }
-      class_entry_t cdef = *base_type.as.clazz;
+      class_entry_t cdef = get_class_by_name(base_type.name);
       if (lm->as.binop.rhs->kind != AST_IDENTIFIER) {
         printf("Malformed access expression: ");
         dump_ast(lm);
@@ -1086,7 +1262,27 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
       exit(1);
     }
   }
-  printf("%s:%d TODO: get_lm_pointer\n", __FILE__, __LINE__);
+  if (lm->kind == AST_AS_DIR) {
+    type_t to_cast = t_of_expr(lm);
+    LLVMValueRef expr = generate_expression(lm->as.as_dir.expr);
+    expr = generate_cast(expr, to_cast);
+    LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, to_cast.type, "");
+    LLVMBuildStore(gen->builder, expr, ptr);
+    return ptr;
+  }
+  if (lm->kind == AST_INDEX) {
+    ast_t *lhs = lm->as.index.subscripted;
+    ast_t *rhs = lm->as.index.index;
+    type_t base = t_of_expr(lhs);
+    type_t actual = dereference_type(base);
+    LLVMValueRef lhs_ptr = generate_expression(lhs);
+    LLVMValueRef rhs_val = generate_expression(rhs);
+    LLVMValueRef res =
+        LLVMBuildGEP2(gen->builder, actual.type, lhs_ptr, &rhs_val, 1, "");
+    return res;
+  }
+
+  printf("%s:%d TODO: get_lm_pointer %d\n", __FILE__, __LINE__, lm->kind);
   exit(1);
 }
 
@@ -1128,6 +1324,10 @@ int get_constructor_with_single_arg_matching_type(class_entry_t cdef,
 
 LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
   LLVMTypeRef llvm_target_type = type_to_llvm(target_type);
+  if (LLVMGetTypeKind(LLVMTypeOf(value)) == LLVMPointerTypeKind &&
+      target_type.kind == PTR) {
+    return value;
+  }
   if (LLVMTypeOf(value) == llvm_target_type) {
     return value;
   }
@@ -1135,19 +1335,20 @@ LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
     return LLVMBuildICmp(gen->builder, LLVMIntNE, value,
                          LLVMConstInt(LLVMTypeOf(value), 0, 0), "");
   }
-  if (LLVMGetTypeKind(LLVMTypeOf(value)) == LLVMPointerTypeKind) {
-    value = LLVMBuildPtrToInt(gen->builder, value,
-                              get_type_from_name("int").type, "");
-  }
+
   if (target_type.kind == PTR) {
     value = LLVMBuildIntToPtr(gen->builder, value, llvm_target_type, "");
   } else if (is_integer_type(target_type)) {
+    if (LLVMGetTypeKind(LLVMTypeOf(value)) == LLVMPointerTypeKind) {
+      value = LLVMBuildPtrToInt(gen->builder, value,
+                                get_type_from_name("int").type, "");
+    }
     value = LLVMBuildIntCast2(gen->builder, value, llvm_target_type, 1, "");
   } else {
     if (target_type.kind == CLASS) {
       // Look for a single argument constructor that matches values's type.
       // If found, call it.
-      class_entry_t cdef = *target_type.as.clazz;
+      class_entry_t cdef = get_class_by_name(target_type.name);
       int constructor_index = get_constructor_with_single_arg_matching_type(
           cdef, LLVMTypeOf(value));
       if (constructor_index < 0) {
@@ -1163,7 +1364,16 @@ LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
         exit(1);
       }
       constructor_t c = cdef.constructors.items[constructor_index];
-      LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, target_type.type, "");
+      LLVMValueRef ptr;
+      if (gen->current_ptr == NULL) {
+        ptr = LLVMBuildAlloca(gen->builder, target_type.type, "");
+      } else {
+        ptr = gen->current_ptr;
+      }
+      if (!gen->is_new) {
+        defer_elem_t elem = {get_named_values_scope(), target_type, ptr};
+        da_append(&gen->defers, elem);
+      }
       lvalues args = {0};
       da_append(&args, ptr);
       da_append(&args, value);
@@ -1184,6 +1394,7 @@ void generate_return(ast_t *ret) {
     printf("Error: Return statement outside of a function.\n");
     exit(1);
   }
+  generate_defers(gen->current_function_scope);
   type_t target_type = gen->current_function->return_type;
   LLVMTypeRef llvm_target_type = type_to_llvm(target_type);
   if (ret->as.return_stmt.expr == NULL) {
@@ -1219,7 +1430,7 @@ LLVMValueRef generate_default_value_for_type(type_t t) {
   } else if (t.kind == PTR) {
     return LLVMConstNull(t.type);
   }
-  class_entry_t c = *t.as.clazz;
+  class_entry_t c = get_class_by_name(t.name);
   int default_constructor_index = get_default_constructor(c);
   if (default_constructor_index < 0) {
     printf("Error: No default constructor found for class %s.\n", c.name);
@@ -1236,6 +1447,9 @@ LLVMValueRef generate_default_value_for_type(type_t t) {
 void generate_vardef(ast_t *vardef) {
   type_t type = get_type_from_ast(vardef->as.vardef.type);
   LLVMTypeRef llvm_type = type_to_llvm(type);
+  LLVMValueRef current_ptr = gen->current_ptr;
+  LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, llvm_type, "var");
+  gen->current_ptr = ptr;
   LLVMValueRef expr;
   if (vardef->as.vardef.value != NULL) {
     expr = generate_expression(vardef->as.vardef.value);
@@ -1246,7 +1460,7 @@ void generate_vardef(ast_t *vardef) {
     expr = generate_cast(expr, type);
   }
   char *name = sv_to_cstr(vardef->as.vardef.name.lexeme);
-  LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, llvm_type, "var");
+
   LLVMBuildStore(gen->builder, expr, ptr);
   LLVMSetValueName(expr, name);
   named_value_entry_t entry = {
@@ -1255,12 +1469,22 @@ void generate_vardef(ast_t *vardef) {
       ptr,
   };
   add_named_value(entry);
+  gen->current_ptr = current_ptr;
 }
 
 void generate_ct_cte(ast_t *ct_cte) {
   (void)ct_cte;
   printf("%s:%d TODO: generate_ct_cte\n", __FILE__, __LINE__);
   exit(1);
+}
+
+bool does_type_exist(char *name) {
+  for (size_t i = 0; i < gen->types.count; i++) {
+    if (strcmp(gen->types.items[i].name, name) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 class_entry_t entry_from_cdef(ast_class_t cdef) {
@@ -1273,51 +1497,60 @@ class_entry_t entry_from_cdef(ast_class_t cdef) {
 
   for (size_t i = 0; i < cdef.field_count; i++) {
     ast_t *field = cdef.fields[i];
-    if (field->kind == AST_METHOD) {
-      if (sv_eq(cdef.name.lexeme,
-                field->as.method.fdef->as.fundef.name.lexeme)) {
-        ast_method_t m = field->as.method;
-        specifier_t spec =
-            sv_eq(m.specifier.lexeme, SV("public")) ? PUBLIC : PRIVATE;
-        strings arg_names = {0};
-        types arg_types = {0};
-        ast_fundef_t fundef = m.fdef->as.fundef;
-        for (size_t j = 0; j < fundef.param_count; j++) {
-          type_t type = get_type_from_ast(fundef.param_types[j]);
-          char *name = sv_to_cstr(fundef.param_names[j].lexeme);
-          da_append(&arg_names, name);
-          da_append(&arg_types, type);
-        }
-        constructor_t entry = {spec, arg_names, arg_types};
-        da_append(&constructors, entry);
-      } else {
-        ast_method_t m = field->as.method;
-        char *method_name =
-            sv_to_cstr(field->as.method.fdef->as.fundef.name.lexeme);
-        specifier_t spec =
-            sv_eq(m.specifier.lexeme, SV("public")) ? PUBLIC : PRIVATE;
-        strings arg_names = {0};
-        types arg_types = {0};
-        ast_fundef_t fundef = m.fdef->as.fundef;
-        for (size_t j = 0; j < fundef.param_count; j++) {
-          type_t type = get_type_from_ast(fundef.param_types[j]);
-          char *name = sv_to_cstr(fundef.param_names[j].lexeme);
-          da_append(&arg_names, name);
-          da_append(&arg_types, type);
-        }
-        type_t return_type = get_type_from_ast(fundef.return_type);
-        method_t entry = {method_name, spec, arg_names, arg_types, return_type};
-        da_append(&methods, entry);
-      }
-    } else {
-      ast_member_t m = field->as.member;
+    if (field->kind != AST_MEMBER)
+      continue;
+    ast_member_t m = field->as.member;
+    specifier_t spec =
+        sv_eq(m.specifier.lexeme, SV("public")) ? PUBLIC : PRIVATE;
+    type_t type = get_type_from_ast(m.var->as.vardef.type);
+    ast_t *init = m.var->as.vardef.value;
+    char *name = sv_to_cstr(m.var->as.vardef.name.lexeme);
+    member_t entry = {name, spec, type, init};
+    da_append(&members, entry);
+  }
+
+  if (!does_type_exist(name)) {
+    add_type(
+        t_from_cdef((class_entry_t){name, methods, constructors, members}));
+  }
+
+  for (size_t i = 0; i < cdef.field_count; i++) {
+    ast_t *field = cdef.fields[i];
+    if (field->kind != AST_METHOD)
+      continue;
+    if (sv_eq(cdef.name.lexeme, field->as.method.fdef->as.fundef.name.lexeme)) {
+      ast_method_t m = field->as.method;
       specifier_t spec =
           sv_eq(m.specifier.lexeme, SV("public")) ? PUBLIC : PRIVATE;
-      type_t type = get_type_from_ast(m.var->as.vardef.type);
-      ast_t *init = m.var->as.vardef.value;
-      char *name = sv_to_cstr(m.var->as.vardef.name.lexeme);
-      member_t entry = {name, spec, type, init};
-      da_append(&members, entry);
+      strings arg_names = {0};
+      types arg_types = {0};
+      ast_fundef_t fundef = m.fdef->as.fundef;
+      for (size_t j = 0; j < fundef.param_count; j++) {
+        type_t type = get_type_from_ast(fundef.param_types[j]);
+        char *name = sv_to_cstr(fundef.param_names[j].lexeme);
+        da_append(&arg_names, name);
+        da_append(&arg_types, type);
+      }
+      constructor_t entry = {spec, arg_names, arg_types};
+      da_append(&constructors, entry);
+    } else {
+      ast_method_t m = field->as.method;
+      char *method_name =
+          sv_to_cstr(field->as.method.fdef->as.fundef.name.lexeme);
+      specifier_t spec =
+          sv_eq(m.specifier.lexeme, SV("public")) ? PUBLIC : PRIVATE;
+      strings arg_names = {0};
+      types arg_types = {0};
+      ast_fundef_t fundef = m.fdef->as.fundef;
+      for (size_t j = 0; j < fundef.param_count; j++) {
+        type_t type = get_type_from_ast(fundef.param_types[j]);
+        char *name = sv_to_cstr(fundef.param_names[j].lexeme);
+        da_append(&arg_names, name);
+        da_append(&arg_types, type);
+      }
+      type_t return_type = get_type_from_ast(fundef.return_type);
+      method_t entry = {method_name, spec, arg_names, arg_types, return_type};
+      da_append(&methods, entry);
     }
   }
   class_entry_t entry = {

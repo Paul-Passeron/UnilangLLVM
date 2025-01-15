@@ -6,7 +6,7 @@ SRC=src/
 BUILD=build/
 BIN=bin/
 
-DEPS=  $(BUILD)Unilang.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o $(BUILD)unilang_lexer.o $(BUILD)parser.o $(BUILD)ast.o $(BUILD)parser_helper.o  $(BUILD)generator.o $(BUILD)unilang_parser.o
+DEPS=  $(BUILD)Unilang.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o $(BUILD)unilang_lexer.o $(BUILD)parser.o $(BUILD)ast.o $(BUILD)parser_helper.o  $(BUILD)generator.o $(BUILD)unilang_parser.o  
 all: init lines Unilang
 lines:
 	@echo "C:"

@@ -65,6 +65,11 @@ void *parse_param_c0(lexer_t *l, int *worked);
 
 // RULE arglist
 // RULE funcallargs
+// RULE cast_like_dir
+void *parse_cast_like_dir_c0(lexer_t *l, int *worked);
+
+void *parse_cast_like_dir_c1(lexer_t *l, int *worked);
+
 // RULE leaf
 void *parse_leaf_c0(lexer_t *l, int *worked);
 
@@ -73,6 +78,8 @@ void *parse_leaf_c1(lexer_t *l, int *worked);
 void *parse_leaf_c2(lexer_t *l, int *worked);
 
 void *parse_leaf_c3(lexer_t *l, int *worked);
+
+void *parse_leaf_c4(lexer_t *l, int *worked);
 
 // RULE expr
 void *parse_expr_c0(lexer_t *l, int *worked);
@@ -142,6 +149,8 @@ void *parse_uop_c0(lexer_t *l, int *worked);
 void *parse_uop_c1(lexer_t *l, int *worked);
 
 void *parse_uop_c2(lexer_t *l, int *worked);
+
+void *parse_uop_c3(lexer_t *l, int *worked);
 
 // RULE vardef_letless
 void *parse_vardef_letless_c0(lexer_t *l, int *worked);
@@ -412,6 +421,28 @@ void *parse_funcallargs(lexer_t *l, int *worked) {
   *worked = count > 0;
   return elems;
 }
+// RULE cast_like_dir
+void *parse_cast_like_dir(lexer_t *l, int *worked) {
+  *worked = 0;
+  int rule_worked = 0;
+  void *rule_res = NULL;
+  lexer_t rule_cpy = *l;
+  rule_res = parse_cast_like_dir_c0(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_cast_like_dir_c1(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  return NULL;
+}
+
 // RULE leaf
 void *parse_leaf(lexer_t *l, int *worked) {
   *worked = 0;
@@ -440,6 +471,13 @@ void *parse_leaf(lexer_t *l, int *worked) {
   }
   rule_cpy = *l;
   rule_res = parse_leaf_c3(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_leaf_c4(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -797,6 +835,13 @@ void *parse_uop(lexer_t *l, int *worked) {
   }
   rule_cpy = *l;
   rule_res = parse_uop_c2(&rule_cpy, &rule_worked);
+  if (rule_worked) {
+    *worked = 1;
+    *l = rule_cpy;
+    return rule_res;
+  }
+  rule_cpy = *l;
+  rule_res = parse_uop_c3(&rule_cpy, &rule_worked);
   if (rule_worked) {
     *worked = 1;
     *l = rule_cpy;
@@ -1226,6 +1271,40 @@ void *parse_param_c0(lexer_t *l, int *worked) {
   ast_t *type = elem_2;
   return new_param(id, type);
 }
+void *parse_cast_like_dir_c0(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("@as")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_type(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_2 = parse_leaf(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  return new_as_dir(elem_1, elem_2);
+}
+void *parse_cast_like_dir_c1(lexer_t *l, int *worked) {
+  *worked = 0;
+  free(parse_token_lexeme(l, worked, SV("@new")));
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_1 = parse_type(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  void *elem_2 = parse_leaf(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+
+  return new_new_dir(elem_1, elem_2);
+}
 void *parse_leaf_c0(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_paren(l, worked);
@@ -1253,6 +1332,14 @@ void *parse_leaf_c2(lexer_t *l, int *worked) {
 void *parse_leaf_c3(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_unary(l, worked);
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_leaf_c4(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_cast_like_dir(l, worked);
   if (!*worked) {
     return NULL;
   }
@@ -1600,6 +1687,14 @@ void *parse_uop_c1(lexer_t *l, int *worked) {
 void *parse_uop_c2(lexer_t *l, int *worked) {
   *worked = 0;
   void *elem_0 = parse_token_lexeme(l, worked, SV("$"));
+  if (!*worked) {
+    return NULL;
+  }
+  return elem_0;
+}
+void *parse_uop_c3(lexer_t *l, int *worked) {
+  *worked = 0;
+  void *elem_0 = parse_token_lexeme(l, worked, SV("&"));
   if (!*worked) {
     return NULL;
   }

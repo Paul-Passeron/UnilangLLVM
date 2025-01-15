@@ -58,11 +58,20 @@ struct type_t {
   const char *name;
   typekind_t kind;
   LLVMTypeRef type;
-  union {
-    type_t *pointed_by;
-    class_entry_t *clazz;
-  } as;
+  type_t *pointed_by;
 };
+
+typedef struct defer_elem_t {
+  int scope;
+  type_t t;
+  LLVMValueRef ptr;
+} defer_elem_t;
+
+typedef struct defers {
+  defer_elem_t *items;
+  size_t count;
+  size_t capacity;
+} defers;
 
 typedef enum specifier_t { PUBLIC, PRIVATE } specifier_t;
 
@@ -136,6 +145,10 @@ struct generator_t {
   types types;
   classes classes;
   function_entry_t *current_function;
+  defers defers;
+  LLVMValueRef current_ptr;
+  int current_function_scope;
+  int is_new;
 };
 
 typedef struct ltypes {
@@ -209,4 +222,8 @@ LLVMTypeRef ftype_from_constructor(constructor_t constructor,
 LLVMTypeRef ftype_from_method(method_t method, class_entry_t cdef);
 
 type_t get_return_type(ast_t *funcall);
+
+class_entry_t get_class_by_name(const char *name);
+method_t get_method_by_name(class_entry_t cdef, const char *name);
+
 #endif // GENERATOR_H

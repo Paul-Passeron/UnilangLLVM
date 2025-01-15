@@ -1,0 +1,1 @@
+projman -b && ./bin/Unilang $1 && clang -g -o tests/test tests/output.s && ./tests/test

@@ -260,6 +260,13 @@ void dump_ast(ast_t *ast) {
     printf(", \"operand\": ");
     dump_ast(ast->as.unop.operand);
   } break;
+  case AST_AS_DIR: {
+    printf("\"AST_AS_DIR\",");
+    printf("\"type\": ");
+    dump_ast(ast->as.as_dir.type);
+    printf(", \"expr\": ");
+    dump_ast(ast->as.as_dir.expr);
+  } break;
   default:
     printf("\"UNKNOWN_KIND\"");
     break;
@@ -358,6 +365,14 @@ void free_ast(ast_t *ast) {
     printf("TODO AST_MEMBER\n");
     exit(1);
   } break;
+  case AST_AS_DIR: {
+    printf("TODO AST_AS_DIR\n");
+    exit(1);
+  }
+  case AST_NEW_DIR: {
+    printf("TODO AST_NEW_DIR\n");
+    exit(1);
+  }
   }
 }
 
@@ -521,5 +536,19 @@ ast_t *new_return(ast_t *expr) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_RETURN;
   res->as.return_stmt = (ast_return_t){expr};
+  return res;
+}
+
+ast_t *new_as_dir(ast_t *type, ast_t *expr) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_AS_DIR;
+  res->as.as_dir = (ast_as_dir_t){type, expr};
+  return res;
+}
+
+ast_t *new_new_dir(ast_t *type, ast_t *expr) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_NEW_DIR;
+  res->as.as_dir = (ast_new_dir_t){type, expr};
   return res;
 }

@@ -41,6 +41,9 @@ void *parse_arglist(lexer_t *l, int *worked);
 // RULE funcallargs
 void *parse_funcallargs(lexer_t *l, int *worked);
 
+// RULE cast_like_dir
+void *parse_cast_like_dir(lexer_t *l, int *worked);
+
 // RULE leaf
 void *parse_leaf(lexer_t *l, int *worked);
 

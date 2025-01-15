@@ -1,0 +1,30 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let print(s: char *): void => {
+  syscall(1, 1, s, strlen(s));
+}
+
+class foo => {
+  private tab: int *,
+  public foo(x: int) => {
+    self::tab => malloc(4);
+    self::tab[0] => x;
+  },
+  public destroy(): void => {
+    print("Destroying foo...\n");
+    free(self::tab);
+  }
+}
+
+let main(): int => {
+  // let f1: foo => (@new foo 15);
+  let f2: foo => 15;
+  // f1::destroy must be called manually
+  // f2::destroy will be called when f2 goes out of scope
+  // f1::destroy();
+  return 0;
+}

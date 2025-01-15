@@ -61,11 +61,20 @@ arglist: @list elem=%param separator=','
 
 funcallargs: @list elem=%expr separator=','
 
+cast_like_dir: 
+  | '@as' %type %leaf => {
+    return new_as_dir(%{1%}, %{2%});
+  }
+  | '@new' %type %leaf => {
+    return new_new_dir(%{1%}, %{2%});
+  }
+
 leaf:
-  | %paren      => { return %{0%}; }
-  | %literal    => { return %{0%}; }
-  | %identifier => { return %{0%}; }
-  | %unary      => { return %{0%}; }
+  | %paren         => { return %{0%}; }
+  | %literal       => { return %{0%}; }
+  | %identifier    => { return %{0%}; }
+  | %unary         => { return %{0%}; }
+  | %cast_like_dir => { return %{0%}; }
 
 
 expr:
@@ -177,6 +186,7 @@ uop:
   | '-' => { return %{0%}; }
   | '!' => { return %{0%}; }
   | '$' => { return %{0%}; }
+  | '&' => { return %{0%}; }
 
 vardef_letless: 
   | %identifier ':' %type '=>' %expr => {
@@ -320,3 +330,4 @@ return:
     return new_return(%{1%});
   }
   | 'return' ';' => { return new_return(NULL); }
+
