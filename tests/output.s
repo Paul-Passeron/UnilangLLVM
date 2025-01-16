@@ -628,335 +628,100 @@ main:
 	.cfi_def_cfa_offset 48
 	pushq	%rbx
 	.cfi_def_cfa_offset 56
-	subq	$648, %rsp
-	.cfi_def_cfa_offset 704
+	subq	$184, %rsp
+	.cfi_def_cfa_offset 240
 	.cfi_offset %rbx, -56
 	.cfi_offset %r12, -48
 	.cfi_offset %r13, -40
 	.cfi_offset %r14, -32
 	.cfi_offset %r15, -24
 	.cfi_offset %rbp, -16
-	leaq	24(%rsp), %rdi
-	movl	$.L__unnamed_3, %esi
-	callq	string_1@PLT
-	leaq	552(%rsp), %rbx
-	movl	$.L__unnamed_4, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	536(%rsp), %rbx
-	movl	$.L__unnamed_5, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	520(%rsp), %rbx
-	movl	$.L__unnamed_6, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	504(%rsp), %rbx
-	movl	$.L__unnamed_7, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	488(%rsp), %rbx
-	movl	$.L__unnamed_8, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	472(%rsp), %rbx
-	movl	$.L__unnamed_9, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	456(%rsp), %rbx
-	movl	$.L__unnamed_10, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	440(%rsp), %rbx
-	movl	$.L__unnamed_11, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	424(%rsp), %rbx
-	movl	$.L__unnamed_12, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	408(%rsp), %rbx
-	movl	$.L__unnamed_13, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	392(%rsp), %rbx
-	movl	$.L__unnamed_14, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	376(%rsp), %rbx
-	movl	$.L__unnamed_15, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	360(%rsp), %rbx
-	movl	$.L__unnamed_16, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	344(%rsp), %rbx
-	movl	$.L__unnamed_17, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	328(%rsp), %rbx
-	movl	$.L__unnamed_18, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	312(%rsp), %rbx
-	movl	$.L__unnamed_19, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	296(%rsp), %rbx
-	movl	$.L__unnamed_20, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	280(%rsp), %rbx
-	movl	$.L__unnamed_21, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	264(%rsp), %rbx
-	movl	$.L__unnamed_22, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	248(%rsp), %rbx
-	movl	$.L__unnamed_23, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	232(%rsp), %rbx
-	movl	$.L__unnamed_24, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	216(%rsp), %rbx
-	movl	$.L__unnamed_25, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	200(%rsp), %rbx
-	movl	$.L__unnamed_26, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	184(%rsp), %rbx
-	movl	$.L__unnamed_27, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
 	leaq	168(%rsp), %rbx
-	movl	$.L__unnamed_28, %esi
+	movl	$.L__unnamed_3, %esi
 	movq	%rbx, %rdi
 	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	152(%rsp), %rbx
-	movl	$.L__unnamed_29, %esi
-	movq	%rbx, %rdi
+	leaq	40(%rsp), %rdi
+	movl	$.L__unnamed_4, %esi
 	callq	string_1@PLT
+	movl	48(%rsp), %edx
+	movq	40(%rsp), %rsi
 	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	136(%rsp), %rbx
-	movl	$.L__unnamed_30, %esi
-	movq	%rbx, %rdi
+	callq	string_append@PLT
+	leaq	24(%rsp), %rdi
+	movl	$.L__unnamed_5, %esi
 	callq	string_1@PLT
+	movq	24(%rsp), %rsi
+	movl	32(%rsp), %edx
+	movq	%rbx, %rdi
+	callq	string_append@PLT
 	movq	%rbx, %rdi
 	callq	string_println@PLT
-	leaq	120(%rsp), %rbx
-	movl	$.L__unnamed_31, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	104(%rsp), %rbx
-	movl	$.L__unnamed_32, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	88(%rsp), %rbx
-	movl	$.L__unnamed_33, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	72(%rsp), %rbx
-	movl	$.L__unnamed_34, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	56(%rsp), %rbx
-	movl	$.L__unnamed_35, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	40(%rsp), %rbx
-	movl	$.L__unnamed_36, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	632(%rsp), %r13
-	movl	$.L__unnamed_37, %esi
-	movq	%r13, %rdi
-	callq	string_1@PLT
-	movq	%r13, %rdi
-	callq	string_println@PLT
-	leaq	616(%rsp), %rbp
-	movl	$.L__unnamed_38, %esi
-	movq	%rbp, %rdi
-	callq	string_1@PLT
-	movq	%rbp, %rdi
-	callq	string_println@PLT
-	leaq	600(%rsp), %rbx
-	movl	$.L__unnamed_39, %esi
-	movq	%rbx, %rdi
-	callq	string_1@PLT
-	movq	%rbx, %rdi
-	callq	string_println@PLT
-	leaq	584(%rsp), %r14
-	movl	$.L__unnamed_40, %esi
+	leaq	120(%rsp), %r14
 	movq	%r14, %rdi
-	callq	string_1@PLT
+	movl	$123456, %esi
+	callq	string_3@PLT
 	movq	%r14, %rdi
 	callq	string_println@PLT
-	leaq	568(%rsp), %r15
-	movl	$.L__unnamed_41, %esi
-	movq	%r15, %rdi
+	leaq	104(%rsp), %rdi
+	movl	$.L__unnamed_6, %esi
 	callq	string_1@PLT
-	movq	%r15, %rdi
-	callq	string_println@PLT
-	leaq	8(%rsp), %r12
-	movl	$.L__unnamed_42, %esi
-	movq	%r12, %rdi
+	leaq	152(%rsp), %rbp
+	movl	$.L__unnamed_7, %esi
+	movq	%rbp, %rdi
 	callq	string_1@PLT
+	leaq	8(%rsp), %rdi
+	movl	$5, %esi
+	callq	string_3@PLT
 	movl	16(%rsp), %edx
 	movq	8(%rsp), %rsi
-	leaq	24(%rsp), %rdi
-	callq	string_append@PLT
-	movq	%r12, %rdi
-	callq	string_destroy@PLT
+	movq	%rbp, %rdi
+	callq	string_op_add@PLT
+	movq	%rax, 88(%rsp)
+	movl	%edx, 96(%rsp)
+	leaq	88(%rsp), %r15
 	movq	%r15, %rdi
-	callq	string_destroy@PLT
+	callq	string_println@PLT
+	leaq	136(%rsp), %r13
+	movl	$.L__unnamed_8, %esi
+	movq	%r13, %rdi
+	callq	string_1@PLT
+	leaq	72(%rsp), %r12
+	movl	$.L__unnamed_9, %esi
+	movq	%r12, %rdi
+	callq	string_1@PLT
+	movl	80(%rsp), %edx
+	movq	72(%rsp), %rsi
+	movq	%r13, %rdi
+	callq	string_op_add@PLT
+	movq	%rax, 56(%rsp)
+	movl	%edx, 64(%rsp)
+	leaq	56(%rsp), %r14
+	movq	%r14, %rdi
+	callq	string_println@PLT
 	movq	%r14, %rdi
 	callq	string_destroy@PLT
-	movq	%rbx, %rdi
-	callq	string_destroy@PLT
-	movq	%rbp, %rdi
+	movq	%r12, %rdi
 	callq	string_destroy@PLT
 	movq	%r13, %rdi
 	callq	string_destroy@PLT
-	leaq	40(%rsp), %rdi
+	movq	%r15, %rdi
 	callq	string_destroy@PLT
-	leaq	56(%rsp), %rdi
+	leaq	8(%rsp), %rdi
 	callq	string_destroy@PLT
-	leaq	72(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	88(%rsp), %rdi
+	movq	%rbp, %rdi
 	callq	string_destroy@PLT
 	leaq	104(%rsp), %rdi
 	callq	string_destroy@PLT
 	leaq	120(%rsp), %rdi
 	callq	string_destroy@PLT
-	leaq	136(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	152(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	168(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	184(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	200(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	216(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	232(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	248(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	264(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	280(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	296(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	312(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	328(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	344(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	360(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	376(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	392(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	408(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	424(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	440(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	456(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	472(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	488(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	504(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	520(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	536(%rsp), %rdi
-	callq	string_destroy@PLT
-	leaq	552(%rsp), %rdi
-	callq	string_destroy@PLT
 	leaq	24(%rsp), %rdi
 	callq	string_destroy@PLT
+	leaq	40(%rsp), %rdi
+	callq	string_destroy@PLT
+	movq	%rbx, %rdi
+	callq	string_destroy@PLT
 	xorl	%eax, %eax
-	addq	$648, %rsp
+	addq	$184, %rsp
 	.cfi_def_cfa_offset 56
 	popq	%rbx
 	.cfi_def_cfa_offset 48
@@ -993,197 +758,32 @@ main:
 
 	.type	.L__unnamed_4,@object
 .L__unnamed_4:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_4, 18
+	.asciz	" whattt"
+	.size	.L__unnamed_4, 8
 
 	.type	.L__unnamed_5,@object
 .L__unnamed_5:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_5, 18
+	.asciz	"World !"
+	.size	.L__unnamed_5, 8
 
 	.type	.L__unnamed_6,@object
 .L__unnamed_6:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_6, 18
+	.asciz	" World !"
+	.size	.L__unnamed_6, 9
 
 	.type	.L__unnamed_7,@object
 .L__unnamed_7:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_7, 18
+	.asciz	"Hello"
+	.size	.L__unnamed_7, 6
 
 	.type	.L__unnamed_8,@object
 .L__unnamed_8:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_8, 18
+	.asciz	"Hello"
+	.size	.L__unnamed_8, 6
 
 	.type	.L__unnamed_9,@object
 .L__unnamed_9:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_9, 18
-
-	.type	.L__unnamed_10,@object
-.L__unnamed_10:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_10, 18
-
-	.type	.L__unnamed_11,@object
-.L__unnamed_11:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_11, 18
-
-	.type	.L__unnamed_12,@object
-.L__unnamed_12:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_12, 18
-
-	.type	.L__unnamed_13,@object
-.L__unnamed_13:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_13, 18
-
-	.type	.L__unnamed_14,@object
-.L__unnamed_14:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_14, 18
-
-	.type	.L__unnamed_15,@object
-.L__unnamed_15:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_15, 18
-
-	.type	.L__unnamed_16,@object
-.L__unnamed_16:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_16, 18
-
-	.type	.L__unnamed_17,@object
-.L__unnamed_17:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_17, 18
-
-	.type	.L__unnamed_18,@object
-.L__unnamed_18:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_18, 18
-
-	.type	.L__unnamed_19,@object
-.L__unnamed_19:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_19, 18
-
-	.type	.L__unnamed_20,@object
-.L__unnamed_20:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_20, 18
-
-	.type	.L__unnamed_21,@object
-.L__unnamed_21:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_21, 18
-
-	.type	.L__unnamed_22,@object
-.L__unnamed_22:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_22, 18
-
-	.type	.L__unnamed_23,@object
-.L__unnamed_23:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_23, 18
-
-	.type	.L__unnamed_24,@object
-.L__unnamed_24:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_24, 18
-
-	.type	.L__unnamed_25,@object
-.L__unnamed_25:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_25, 18
-
-	.type	.L__unnamed_26,@object
-.L__unnamed_26:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_26, 18
-
-	.type	.L__unnamed_27,@object
-.L__unnamed_27:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_27, 18
-
-	.type	.L__unnamed_28,@object
-.L__unnamed_28:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_28, 18
-
-	.type	.L__unnamed_29,@object
-.L__unnamed_29:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_29, 18
-
-	.type	.L__unnamed_30,@object
-.L__unnamed_30:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_30, 18
-
-	.type	.L__unnamed_31,@object
-.L__unnamed_31:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_31, 18
-
-	.type	.L__unnamed_32,@object
-.L__unnamed_32:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_32, 18
-
-	.type	.L__unnamed_33,@object
-.L__unnamed_33:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_33, 18
-
-	.type	.L__unnamed_34,@object
-.L__unnamed_34:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_34, 18
-
-	.type	.L__unnamed_35,@object
-.L__unnamed_35:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_35, 18
-
-	.type	.L__unnamed_36,@object
-.L__unnamed_36:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_36, 18
-
-	.type	.L__unnamed_37,@object
-.L__unnamed_37:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_37, 18
-
-	.type	.L__unnamed_38,@object
-.L__unnamed_38:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_38, 18
-
-	.type	.L__unnamed_39,@object
-.L__unnamed_39:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_39, 18
-
-	.type	.L__unnamed_40,@object
-.L__unnamed_40:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_40, 18
-
-	.type	.L__unnamed_41,@object
-.L__unnamed_41:
-	.asciz	"I leak no more..."
-	.size	.L__unnamed_41, 18
-
-	.type	.L__unnamed_42,@object
-.L__unnamed_42:
-	.asciz	" whattt"
-	.size	.L__unnamed_42, 8
+	.asciz	"Hello"
+	.size	.L__unnamed_9, 6
 
 	.section	".note.GNU-stack","",@progbits
