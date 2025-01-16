@@ -1,4 +1,5 @@
 #include "../include/unilang_parser.h"
+
 token_t *parse_token_lexeme(lexer_t *l, int *worked, string_view_t lexeme) {
   token_t tok = next(l);
   *worked = 0;
@@ -376,9 +377,15 @@ void *parse_arglist(lexer_t *l, int *worked) {
     if (!rule_worked) {
       break;
     }
-    if (count >= cap) {
-      cap *= 2;
-      elem = realloc(elem, cap * sizeof(void *));
+    if (count + 1 >= cap) {
+      cap += 16;
+      void **temp = realloc(elems, cap * sizeof(void *));
+      if (!temp) {
+        free(elems);
+        perror("Reallocation failed");
+        exit(EXIT_FAILURE);
+      }
+      elems = temp;
     }
     elems[count++] = elem;
     old = *l;
@@ -388,7 +395,9 @@ void *parse_arglist(lexer_t *l, int *worked) {
       break;
     }
   }
-  elems = realloc(elems, (count + 1) * sizeof(void *));
+  if (count + 1 >= cap) {
+    elems = realloc(elems, (count + 1) * sizeof(void *));
+  }
   elems[count] = NULL;
   *worked = count > 0;
   return elems;
@@ -404,9 +413,15 @@ void *parse_funcallargs(lexer_t *l, int *worked) {
     if (!rule_worked) {
       break;
     }
-    if (count >= cap) {
-      cap *= 2;
-      elem = realloc(elem, cap * sizeof(void *));
+    if (count + 1 >= cap) {
+      cap += 16;
+      void **temp = realloc(elems, cap * sizeof(void *));
+      if (!temp) {
+        free(elems);
+        perror("Reallocation failed");
+        exit(EXIT_FAILURE);
+      }
+      elems = temp;
     }
     elems[count++] = elem;
     old = *l;
@@ -416,7 +431,9 @@ void *parse_funcallargs(lexer_t *l, int *worked) {
       break;
     }
   }
-  elems = realloc(elems, (count + 1) * sizeof(void *));
+  if (count + 1 >= cap) {
+    elems = realloc(elems, (count + 1) * sizeof(void *));
+  }
   elems[count] = NULL;
   *worked = count > 0;
   return elems;
@@ -643,14 +660,22 @@ void *parse_starlist(lexer_t *l, int *worked) {
       *l = old;
       break;
     }
-    if (count >= cap) {
-      cap *= 2;
-      elem = realloc(elem, cap * sizeof(void *));
+    if (count + 1 >= cap) {
+      cap += 16;
+      void **temp = realloc(elems, cap * sizeof(void *));
+      if (!temp) {
+        free(elems);
+        perror("Reallocation failed");
+        exit(EXIT_FAILURE);
+      }
+      elems = temp;
     }
     elems[count++] = elem;
     old = *l;
   }
-  elems = realloc(elems, (count + 1) * sizeof(void *));
+  if (count + 1 >= cap) {
+    elems = realloc(elems, (count + 1) * sizeof(void *));
+  }
   elems[count] = NULL;
   *worked = count > 0;
   return elems;
@@ -694,7 +719,7 @@ void *parse_unary(lexer_t *l, int *worked) {
 
 void *parse_stmt_list(lexer_t *l, int *worked) {
   int rule_worked = 0;
-  size_t cap = 16;
+  size_t cap = 32;
   size_t count = 0;
   void **elems = malloc(sizeof(void *) * cap);
   while (1) {
@@ -704,14 +729,23 @@ void *parse_stmt_list(lexer_t *l, int *worked) {
       *l = old;
       break;
     }
-    if (count >= cap) {
-      cap *= 2;
-      elem = realloc(elem, cap * sizeof(void *));
+    if (count + 1 >= cap) {
+      cap += 16;
+      void **temp = realloc(elems, cap * sizeof(void *));
+      if (!temp) {
+        free(elems);
+        perror("Reallocation failed");
+        exit(EXIT_FAILURE);
+      }
+      elems = temp;
     }
     elems[count++] = elem;
     old = *l;
   }
-  elems = realloc(elems, (count + 1) * sizeof(void *));
+  if (count + 1 >= cap) {
+    printf("COvfdvfUNT: %ld\n", count);
+    elems = realloc(elems, (count + 1) * sizeof(void *));
+  }
   elems[count] = NULL;
   *worked = count > 0;
   return elems;
@@ -750,14 +784,23 @@ void *parse_program_list(lexer_t *l, int *worked) {
       *l = old;
       break;
     }
-    if (count >= cap) {
-      cap *= 2;
-      elem = realloc(elem, cap * sizeof(void *));
+    if (count + 1 >= cap) {
+      cap += 16;
+      void **temp = realloc(elems, cap * sizeof(void *));
+      if (!temp) {
+        free(elems);
+        perror("Reallocation failed");
+        exit(EXIT_FAILURE);
+      }
+      elems = temp;
     }
     elems[count++] = elem;
     old = *l;
   }
-  elems = realloc(elems, (count + 1) * sizeof(void *));
+  if (count + 1 >= cap) {
+    printf("COUNT: %ld\n", count);
+    elems = realloc(elems, (count + 1) * sizeof(void *));
+  }
   elems[count] = NULL;
   *worked = count > 0;
   return elems;
@@ -979,9 +1022,15 @@ void *parse_class_body(lexer_t *l, int *worked) {
     if (!rule_worked) {
       break;
     }
-    if (count >= cap) {
-      cap *= 2;
-      elem = realloc(elem, cap * sizeof(void *));
+    if (count + 1 >= cap) {
+      cap += 16;
+      void **temp = realloc(elems, cap * sizeof(void *));
+      if (!temp) {
+        free(elems);
+        perror("Reallocation failed");
+        exit(EXIT_FAILURE);
+      }
+      elems = temp;
     }
     elems[count++] = elem;
     old = *l;
@@ -991,7 +1040,11 @@ void *parse_class_body(lexer_t *l, int *worked) {
       break;
     }
   }
-  elems = realloc(elems, (count + 1) * sizeof(void *));
+  printf("COUNT: %ld\n", count);
+  if (count + 1 >= cap) {
+    printf("COUNT: %ld\n", count);
+    elems = realloc(elems, (count + 1) * sizeof(void *));
+  }
   elems[count] = NULL;
   *worked = count > 0;
   return elems;

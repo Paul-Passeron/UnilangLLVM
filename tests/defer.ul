@@ -14,6 +14,11 @@ class foo => {
     self::tab => malloc(4);
     self::tab[0] => x;
   },
+  public foo(f: foo) => {
+    print("copy constructor called\n");
+    self::tab => malloc(4);
+    self::tab[0] => f::tab[0];
+  },
   public destroy(): void => {
     print("Destroying foo...\n");
     free(self::tab);
@@ -21,10 +26,11 @@ class foo => {
 }
 
 let main(): int => {
-  // let f1: foo => (@new foo 15);
-  let f2: foo => 15;
-  // f1::destroy must be called manually
-  // f2::destroy will be called when f2 goes out of scope
-  // f1::destroy();
+  let f1: foo => @new foo 15; // should not be destroyed automatically
+  let f2: foo => 15;          // should be destroyed
+  let f3: foo => @as foo f1;  // should be destroyed
+  let f4: foo => f1;          // should not be destroyed
+  let f5: foo => f2;          // should not be destroyed
+  f1::destroy();
   return 0;
 }

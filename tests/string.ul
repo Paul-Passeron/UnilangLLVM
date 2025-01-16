@@ -40,6 +40,16 @@ class string => {
   private contents: char *,
   private len: int,
 
+  public string(s: string) => {
+    self::len => s::len();
+    self::contents => malloc(self::len);
+    let i: int => 0;
+    while i < self::len => {
+      self::contents[i] => s::at(i);
+      i => i + 1;
+    }
+  },
+
   public string(s: char *) => {
     self::len => strlen(s);
     self::contents => malloc(self::len);
@@ -54,6 +64,18 @@ class string => {
     self::len => 1;
     self::contents => malloc(1);
     self::contents[0] => c;
+  },
+
+  public string(x: int) => {
+    self::len => intlen(x, 10);
+    self::contents => malloc(self::len);
+    let i: int => self::len - 1;
+    if x = 0 => self::contents[0] => '0';
+    while x > 0 => {
+      self::contents[i] => x % 10 + '0';
+      x => x / 10;
+      i => i - 1;
+    }
   },
 
   public print(): void => {
@@ -75,11 +97,6 @@ class string => {
       return 0;
     }
     return self::contents[i];
-  },
-  public foo(i: int): void => {
-    print("fooo: ");
-    print_int($(@as i32 *i));
-    nl();
   },
 
   public append(s: string): void => {
@@ -105,7 +122,6 @@ class string => {
   public join(s: string, sep: char): void => {
     let tmp: string => sep;
     self::append(tmp);
-    tmp::destroy();
     self::append(s);    
   },
 
@@ -114,19 +130,67 @@ class string => {
     self::len => 0;
     free(self::contents);
     self::contents => 0;
+  },
+
+  public op_add(s: string): string => {
+    let s2: string => @new string (self);
+    s2::append(s);
+    return s2;
   }
 }
 
-
 let main(): int => {
   let s: string => "Hello, ";
-  let s2: string => "World !";
-  let leaker: string => @new string "I leak ???";
-  leaker::println();
-  leaker::destroy();
   (@as string "I leak no more...")::println();
-  s::append(s2);
-  s::append(@as string " whattt");
-  s::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  (@as string "I leak no more...")::println();
+  s::append(" whattt");
+
+  // let s2: string => "World !";
+  // s::append(s2);
+  // s::println();
+  // (@as string 123456)::println();
+  // let s3: string => " World !";
+  // ((@as string "Hello") + 5)::println();
+  // let a: string => "Hello";
+  // (a + "Hello")::println();
+  // (a + "Hello")::println();
+  // (a + "Hello")::println();
+  // (a + "Hello")::println();
   return 0;
 }

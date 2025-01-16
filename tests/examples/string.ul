@@ -1,0 +1,30 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let print(s: char *): void => {
+  syscall(1, 1, s, strlen(s));
+}
+
+class string => {
+  private contents: char *,
+
+  public string(s: char *) => {
+    self::contents => s; 
+  },
+
+  public print(): void => {
+    print(self::contents);
+  },
+
+  public println(): void => {
+    print(self::contents);
+    print("\n");
+  }
+}
+
+let main(): void => {
+  (@as string "Hello, World !")::println();
+}

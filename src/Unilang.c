@@ -100,8 +100,6 @@ int main(int argc, char **argv) {
     printf("Parsing failed\n");
     exit(1);
   }
-  dump_ast(prog);
-  printf("\n");
   generator_t g;
   generator_init(&g);
 
@@ -135,12 +133,14 @@ int main(int argc, char **argv) {
   LLVMDisposeMessage(triple);
 
   char *filename = "tests/output.s";
+
   if (LLVMTargetMachineEmitToFile(target_machine, g.module, filename,
                                   LLVMAssemblyFile, &error)) {
     fprintf(stderr, "Error emitting assembly: %s\n", error);
     LLVMDisposeMessage(error);
     return 1;
   }
+  LLVMDisposeModule(g.module);
 
   printf("\n");
   return 0;

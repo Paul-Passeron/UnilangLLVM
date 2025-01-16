@@ -180,6 +180,7 @@ void add_named_value(named_value_entry_t n);
 
 LLVMValueRef generate_expression(ast_t *expr);
 LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type);
+LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t target_type);
 LLVMValueRef generate_intlit(token_t tok);
 LLVMValueRef generate_stringlit(token_t tok);
 LLVMValueRef generate_access(ast_t *access);
@@ -225,5 +226,6 @@ type_t get_return_type(ast_t *funcall);
 
 class_entry_t get_class_by_name(const char *name);
 method_t get_method_by_name(class_entry_t cdef, const char *name);
+int does_method_exist(class_entry_t c, char *name);
 
 #endif // GENERATOR_H

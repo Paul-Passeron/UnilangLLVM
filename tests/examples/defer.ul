@@ -1,0 +1,52 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let print(s: char *): void => {
+  syscall(1, 1, s, strlen(s));
+}
+
+let printc(c: char): void => {
+  syscall(1, 1, &c, 1);
+}
+
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  printc(x % 10 + '0');
+}
+
+class foo => {
+  public tab: int *,
+  public n: int,
+  public foo(n: int) => {
+    self::tab => malloc(4 * n);
+    self::n => n;
+    let i: int => 0;
+    while i < n => {
+      self::tab[i] => i * i;
+      i => i + 1;
+    }
+  },
+  public show(): void => {
+    let i: int => 0;
+    while i < self::n => {
+      print_int(self::tab[i]);
+      print(" ");
+      i => i + 1;
+    }
+    print("\n");
+    return;
+  },
+  public destroy(): void => {
+    free(self::tab);
+  }
+}
+
+let main(): int => {
+  let f: foo => 5;
+  f::show();
+  return 0;
+}

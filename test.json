@@ -1,88 +1,343 @@
 {
-  "kind": "AST_COMPOUND",
-  "content": [
-    {
-      "kind": "AST_FUNDEF",
-      "name": "print_int",
-      "return_type": "void",
-      "params": [
-        {
-          "name": "x",
-          "type": "int"
-        }
-      ],
-      "body": {
-        "kind": "AST_COMPOUND",
-        "content": [
-          {
-            "kind": "AST_VARDEF",
-            "name": "a",
-            "type": "int",
-            "value": {
-              "kind": "AST_BINOP",
-              "operator": "/",
-              "lhs": {
-                "kind": "AST_IDENTIFIER",
-                "value": "x"
-              },
-              "rhs": {
-                "kind": "AST_INTLIT",
-                "value": "10"
-              }
+  "kind": "AST_FUNDEF",
+  "name": "main",
+  "return_type": "int",
+  "params": [],
+  "body": {
+    "kind": "AST_COMPOUND",
+    "content": [
+      {
+        "kind": "AST_IDENTIFIER",
+        "value": "s"
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
             }
           },
-          {
-            "kind": "AST_IFSTMT",
-            "cond": {
-              "kind": "AST_IDENTIFIER",
-              "value": "a"
-            },
-            "if": {
-              "kind": "AST_FUNCALL",
-              "called": {
-                "kind": "AST_IDENTIFIER",
-                "value": "print_int"
-              },
-              "args": [
-                {
-                  "kind": "AST_IDENTIFIER",
-                  "value": "a"
-                }
-              ]
-            },
-            "else": null
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
           },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_AS_DIR",
+            "type": "string",
+            "expr": {
+              "kind": "AST_STRINGLIT",
+              "value": "I leak no more..."
+            }
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "println"
+          }
+        },
+        "args": []
+      },
+      {
+        "kind": "AST_FUNCALL",
+        "called": {
+          "kind": "AST_BINOP",
+          "operator": "::",
+          "lhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "s"
+          },
+          "rhs": {
+            "kind": "AST_IDENTIFIER",
+            "value": "append"
+          }
+        },
+        "args": [
           {
-            "kind": "AST_FUNCALL",
-            "called": {
-              "kind": "AST_IDENTIFIER",
-              "value": "put_character"
-            },
-            "args": [
-              {
-                "kind": "AST_BINOP",
-                "operator": "+",
-                "lhs": {
-                  "kind": "AST_BINOP",
-                  "operator": "%",
-                  "lhs": {
-                    "kind": "AST_IDENTIFIER",
-                    "value": "x"
-                  },
-                  "rhs": {
-                    "kind": "AST_INTLIT",
-                    "value": "10"
-                  }
-                },
-                "rhs": {
-                  "kind": "AST_INTLIT",
-                  "value": "48"
-                }
-              }
-            ]
+            "kind": "AST_STRINGLIT",
+            "value": " whattt"
           }
         ]
+      },
+      {
+        "kind": "AST_RETURN",
+        "expr": {
+          "kind": "AST_INTLIT",
+          "value": "0"
+        }
       }
-    }
-  ]
+    ]
+  }
 }

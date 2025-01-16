@@ -71,6 +71,9 @@ void add_class(class_entry_t c) { da_append(&gen->classes, c); }
 void add_function(function_entry_t f) { da_append(&gen->functions, f); }
 
 void add_named_value(named_value_entry_t n) {
+  if (strcmp(n.name, "")) {
+    printf("Adding %s\n", n.name);
+  }
   da_append(&gen->named_values, n);
 }
 
@@ -191,11 +194,12 @@ void generator_init(generator_t *g) {
   add_builtin_functions();
 }
 
-int get_named_values_scope() {
-  int res = gen->named_values.count;
-  named_value_entry_t dummy = {strdup(""), get_type_from_name("void"), NULL};
-  add_named_value(dummy);
-  return res;
+int get_named_values_scope(bool d) {
+  if (d) {
+    named_value_entry_t dummy = {strdup(""), get_type_from_name("void"), NULL};
+    add_named_value(dummy);
+  }
+  return gen->named_values.count;
 }
 
 void generate_defer(defer_elem_t elem) {
@@ -207,27 +211,30 @@ void generate_defer(defer_elem_t elem) {
     exit(1);
   }
   class_entry_t c = get_class_by_name(elem.t.name);
+  if (does_method_exist(c, "destroy") < 0) {
+    return; // no destroy method
+  }
   method_t m = get_method_by_name(c, "destroy");
   LLVMValueRef fptr = fptr_from_method(m, c);
   LLVMTypeRef ftype = ftype_from_method(m, c);
   LLVMValueRef args[] = {elem.ptr};
-  LLVMDumpValue(args[0]);
   LLVMBuildCall2(gen->builder, ftype, fptr, args, 1, "");
 }
 
 void generate_defers(int scope) {
   if (gen->defers.count > 0) {
-    printf("There are %ld values to defer\n", gen->defers.count);
-    while (gen->defers.items[gen->defers.count - 1].scope > scope) {
-      printf("DEFERING\n");
-      generate_defer(gen->defers.items[--gen->defers.count]);
+    while (gen->defers.count > 0 &&
+           gen->defers.items[gen->defers.count - 1].scope > scope) {
+      generate_defer(gen->defers.items[gen->defers.count - 1]);
+      gen->defers.count--;
     }
   }
 }
 
 void reset_named_values_to_scope(int scope) {
   generate_defers(scope);
-  for (int i = gen->named_values.count - 1; i > scope; i--) {
+  for (size_t index = scope + 1; index < gen->named_values.count; index++) {
+    int i = index;
     free(gen->named_values.items[i].name);
   }
   gen->named_values.count = scope;
@@ -374,12 +381,20 @@ void push_params(function_entry_t entry, LLVMValueRef fptr) {
   }
 }
 
-void generate_compound(ast_t *compound) {
-  int scope = get_named_values_scope();
+void generate_compound_for_fun(ast_t *compound) {
   ast_compound_t body = compound->as.compound;
   for (size_t i = 0; i < body.elem_count; ++i) {
     generate_statement(body.elems[i]);
   }
+}
+
+void generate_compound(ast_t *compound) {
+  int scope = get_named_values_scope(0);
+  ast_compound_t body = compound->as.compound;
+  for (size_t i = 0; i < body.elem_count; ++i) {
+    generate_statement(body.elems[i]);
+  }
+  printf("from compound\n");
   reset_named_values_to_scope(scope);
 }
 
@@ -397,13 +412,14 @@ void generate_function_body(function_entry_t entry, ast_t *body) {
 
   LLVMPositionBuilderAtEnd(gen->builder, bb_entry);
 
-  int scope = get_named_values_scope();
+  int scope = get_named_values_scope(0);
   gen->current_function_scope = scope;
 
   push_params(entry, fptr);
 
-  generate_compound(body);
+  generate_compound_for_fun(body);
 
+  printf("from function\n");
   reset_named_values_to_scope(scope);
 
   if (strcmp(entry.return_type.name, "void") == 0) {
@@ -446,6 +462,11 @@ LLVMValueRef generate_stringlit(token_t tok) {
 
 void generate_fundef(ast_t *fundef) {
   function_entry_t entry = entry_from_fundef(fundef);
+  printf("Generating function %s\n", entry.name);
+  if (strcmp(entry.name, "main") == 0) {
+    dump_ast(fundef);
+  }
+
   add_function(entry);
   generate_function_body(entry, fundef->as.fundef.body);
 }
@@ -587,7 +608,7 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
     }
     for (size_t i = 0; i < m.arg_names.count; ++i) {
       ast_t *expr = funcall->as.funcall.args[i];
-      type_t arg_t = t_of_expr(expr);
+      type_t arg_t = m.arg_types.items[i];
       LLVMValueRef arg = generate_expression(expr);
       if (LLVMTypeOf(arg) != arg_t.type) {
         arg = generate_cast(arg, arg_t);
@@ -614,6 +635,26 @@ int get_index_of_field(const char *field_name, class_entry_t cdef) {
   }
   printf("No field %s in class %s.\n", field_name, cdef.name);
   exit(1);
+}
+
+int get_binop_method_index(token_kind_t op, class_entry_t cdef) {
+  char *name;
+  switch (op) {
+  case PLUS: {
+    name = "op_add";
+  } break;
+  case MINUS: {
+    name = "op_sub";
+  } break;
+  case MULT: {
+    name = "op_mul";
+  } break;
+  default: {
+    printf("%s:%d TODO: other op kinds\n", __FILE__, __LINE__);
+    exit(1);
+  }
+  }
+  return does_method_exist(cdef, name);
 }
 
 type_t t_of_expr(ast_t *expr) {
@@ -647,6 +688,17 @@ type_t t_of_expr(ast_t *expr) {
     }
     type_t lt = t_of_expr(expr->as.binop.lhs);
     type_t rt = t_of_expr(expr->as.binop.rhs);
+    if (lt.kind == CLASS) {
+      class_entry_t cdef = get_class_by_name(lt.name);
+      int index = get_binop_method_index(expr->as.binop.op.kind, cdef);
+      if (index < 0) {
+        printf("No method for '" SF "' binop in class %s\n",
+               SA(expr->as.binop.op.lexeme), lt.name);
+        exit(1);
+      }
+      method_t m = cdef.methods.items[index];
+      return m.return_type;
+    }
     if (lt.type == rt.type) {
       return lt;
     }
@@ -690,12 +742,6 @@ type_t t_of_expr(ast_t *expr) {
   case AST_AS_DIR:
   case AST_NEW_DIR: {
     type_t t = get_type_from_ast(expr->as.as_dir.type);
-    printf("AS TYPE IS ");
-    fflush(stdout);
-    LLVMDumpType(t.type);
-    fflush(stdout);
-    printf("\n");
-    fflush(stdout);
     return t;
   } break;
   case AST_INDEX: {
@@ -712,11 +758,30 @@ type_t t_of_expr(ast_t *expr) {
   }
 }
 
+void add_defer(defer_elem_t d) {
+  for (size_t i = 0; i < gen->defers.count; ++i) {
+    if (d.ptr == gen->defers.items[i].ptr)
+      return;
+  }
+  da_append(&gen->defers, d);
+}
+
 LLVMValueRef generate_binop(ast_t *binop) {
   LLVMValueRef lhs = generate_expression(binop->as.binop.lhs);
   LLVMValueRef rhs = generate_expression(binop->as.binop.rhs);
   type_t lt = t_of_expr(binop->as.binop.lhs);
   type_t rt = t_of_expr(binop->as.binop.rhs);
+  if (lt.kind == CLASS) {
+    LLVMValueRef ptr = get_lm_pointer(binop);
+    defer_elem_t entry = {get_named_values_scope(1), lt, ptr};
+    add_defer(entry);
+    LLVMValueRef res = LLVMBuildLoad2(gen->builder, lt.type, ptr, "");
+    int is_new = gen->is_new;
+    gen->is_new = 0;
+    res = generate_cast_no_check(res, lt);
+    gen->is_new = is_new;
+    return res;
+  }
   bool is_ptr = false;
   if (lt.type != rt.type) {
     if (lt.kind == PTR) {
@@ -796,9 +861,13 @@ bool is_type_int(type_t t) {
 }
 
 int get_named_value(char *name) {
-  for (int i = gen->named_values.count - 1; i >= 0; --i) {
-    if (strcmp(gen->named_values.items[i].name, name) == 0) {
-      return i;
+  for (size_t i = 0; i < gen->named_values.count; ++i) {
+    int index = gen->named_values.count - i - 1;
+    char *s1 = gen->named_values.items[index].name;
+    if (strlen(s1) > 0) {
+      if (strcmp(gen->named_values.items[index].name, name) == 0) {
+        return index;
+      }
     }
   }
   return -1;
@@ -847,9 +916,8 @@ LLVMValueRef generate_index(ast_t *expr) {
 
 LLVMValueRef generate_as_dir(ast_t *expr) {
   type_t to_cast = t_of_expr(expr);
-  LLVMValueRef res = generate_expression(expr->as.as_dir.expr);
-  res = generate_cast(res, to_cast);
-  return res;
+  LLVMValueRef lm = get_lm_pointer(expr);
+  return LLVMBuildLoad2(gen->builder, to_cast.type, lm, "");
 }
 
 LLVMValueRef generate_new_dir(ast_t *expr) {
@@ -857,9 +925,9 @@ LLVMValueRef generate_new_dir(ast_t *expr) {
   LLVMValueRef current_ptr = gen->current_ptr;
   int is_new = gen->is_new;
   gen->current_ptr = NULL;
-  gen->is_new = 1;
   LLVMValueRef res = generate_expression(expr->as.new_dir.expr);
-  res = generate_cast(res, to_cast);
+  gen->is_new = 1;
+  res = generate_cast_no_check(res, to_cast);
   gen->current_ptr = current_ptr;
   gen->is_new = is_new;
   return res;
@@ -886,7 +954,8 @@ LLVMValueRef generate_expression(ast_t *expr) {
     char *name = sv_to_cstr(expr->as.identifier.tok.lexeme);
     int index = get_named_value(name);
     if (index < 0) {
-      printf("Identifier %s not declared in this scope\n", name);
+      printf("Identifier %s not declared in this scope 2 (%d) \n", name, index);
+      exit(1);
     }
     named_value_entry_t entry = gen->named_values.items[index];
     LLVMValueRef ptr = entry.value;
@@ -1086,12 +1155,12 @@ void generate_method(method_t method, class_entry_t cdef, ast_t *m) {
   LLVMValueRef fptr = fptr_from_method(method, cdef);
   char name[256] = {0};
   sprintf(name, "%s_%s", cdef.name, method.name);
+  printf("Generating method %s\n", name);
   strings names = {0};
   types types = {0};
   da_append(&names, strdup("self"));
   da_append(&types, get_type_from_name(cdef.name));
   for (size_t j = 0; j < method.arg_names.count; j++) {
-    printf("TYPE: %s\n", method.arg_types.items[j].name);
     da_append(&types, method.arg_types.items[j]);
     da_append(&names, method.arg_names.items[j]);
   }
@@ -1110,12 +1179,16 @@ void generate_method(method_t method, class_entry_t cdef, ast_t *m) {
       get_ptr_of(get_type_from_name(cdef.name)),
       self,
   };
-  int scope = get_named_values_scope();
+  int scope = get_named_values_scope(1);
   gen->current_function_scope = scope;
   add_named_value(self_entry);
   push_method_params(method, fptr);
-  generate_compound(m->as.method.fdef->as.fundef.body);
+  printf("COUNT OF STMTS: %ld\n",
+         m->as.method.fdef->as.fundef.body->as.compound.elem_count);
+  generate_compound_for_fun(m->as.method.fdef->as.fundef.body);
+  printf("from meth %s\n", name);
   reset_named_values_to_scope(scope);
+  printf("Here !\n");
   if (strcmp(method.return_type.name, "void") == 0) {
     if (LLVMGetBasicBlockTerminator(LLVMGetLastBasicBlock(fptr)) == NULL) {
       LLVMBuildRetVoid(gen->builder);
@@ -1176,11 +1249,12 @@ void generate_constructor(constructor_t c, class_entry_t cdef, int index,
       get_ptr_of(get_type_from_name(cdef.name)),
       self,
   };
-  int scope = get_named_values_scope();
+  int scope = get_named_values_scope(0);
   gen->current_function_scope = scope;
   add_named_value(self_entry);
   push_constructor_params(c, fptr);
   generate_compound(body);
+  printf("from cons\n");
   reset_named_values_to_scope(scope);
   if (LLVMGetBasicBlockTerminator(LLVMGetLastBasicBlock(fptr)) == NULL) {
     LLVMBuildRetVoid(gen->builder);
@@ -1225,7 +1299,8 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
     char *name = sv_to_cstr(lm->as.identifier.tok.lexeme);
     int index = get_named_value(name);
     if (index < 0) {
-      printf("Identifier '%s' not declared in the current scope\n", name);
+      printf("Identifier '%s' not declared in the current scope 1 (%d)\n", name,
+             index);
       exit(1);
     }
     free(name);
@@ -1257,17 +1332,53 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
           LLVMBuildStructGEP2(gen->builder, base_type.type, base, index, "");
       free(field_name);
       return res;
-    } else {
-      printf("%s:%d TODO: binop in lm\n", __FILE__, __LINE__);
-      exit(1);
+    }
+    type_t lt = t_of_expr(lm->as.binop.lhs);
+    if (lt.kind == CLASS) {
+      class_entry_t cdef = get_class_by_name(lt.name);
+      int index = get_binop_method_index(lm->as.binop.op.kind, cdef);
+      if (index < 0) {
+        printf("No method for '" SF "' binop in class %s\n",
+               SA(lm->as.binop.op.lexeme), lt.name);
+        exit(1);
+      }
+      LLVMValueRef current_ptr = gen->current_ptr;
+      gen->current_ptr = NULL;
+      method_t m = cdef.methods.items[index];
+      int is_new = gen->is_new;
+      gen->is_new = 0;
+      LLVMValueRef left = get_lm_pointer(lm->as.binop.lhs);
+      LLVMValueRef right = generate_expression(lm->as.binop.rhs);
+      right = generate_cast_no_check(right, lt);
+      gen->is_new = is_new;
+      LLVMValueRef fptr = fptr_from_method(m, cdef);
+      LLVMTypeRef ftype = ftype_from_method(m, cdef);
+      LLVMValueRef args[] = {left, right};
+      LLVMValueRef expr =
+          LLVMBuildCall2(gen->builder, ftype, fptr, args, 2, "");
+      LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, m.return_type.type, "");
+      LLVMBuildStore(gen->builder, expr, ptr);
+      if (!gen->is_new) {
+        defer_elem_t entry = {get_named_values_scope(1), lt, ptr};
+        // da_append(&gen->defers, entry);
+        add_defer(entry);
+      }
+      gen->current_ptr = current_ptr;
+      return ptr;
     }
   }
   if (lm->kind == AST_AS_DIR) {
+    int is_new = gen->is_new;
+    gen->is_new = 0;
     type_t to_cast = t_of_expr(lm);
-    LLVMValueRef expr = generate_expression(lm->as.as_dir.expr);
-    expr = generate_cast(expr, to_cast);
+    LLVMValueRef old_ptr = gen->current_ptr;
     LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, to_cast.type, "");
+    gen->current_ptr = ptr;
+    LLVMValueRef expr = generate_expression(lm->as.as_dir.expr);
+    expr = generate_cast_no_check(expr, to_cast);
+    gen->current_ptr = old_ptr;
     LLVMBuildStore(gen->builder, expr, ptr);
+    gen->is_new = is_new;
     return ptr;
   }
   if (lm->kind == AST_INDEX) {
@@ -1280,6 +1391,17 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
     LLVMValueRef res =
         LLVMBuildGEP2(gen->builder, actual.type, lhs_ptr, &rhs_val, 1, "");
     return res;
+  }
+  if (lm->kind == AST_NEW_DIR) {
+    type_t to_cast = t_of_expr(lm);
+    int is_new = gen->is_new;
+    LLVMValueRef expr = generate_expression(lm->as.as_dir.expr);
+    gen->is_new = 1;
+    expr = generate_cast_no_check(expr, to_cast);
+    LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, to_cast.type, "");
+    LLVMBuildStore(gen->builder, expr, ptr);
+    gen->is_new = is_new;
+    return ptr;
   }
 
   printf("%s:%d TODO: get_lm_pointer %d\n", __FILE__, __LINE__, lm->kind);
@@ -1322,15 +1444,14 @@ int get_constructor_with_single_arg_matching_type(class_entry_t cdef,
   return -1;
 }
 
-LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
+LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t target_type) {
   LLVMTypeRef llvm_target_type = type_to_llvm(target_type);
+
   if (LLVMGetTypeKind(LLVMTypeOf(value)) == LLVMPointerTypeKind &&
       target_type.kind == PTR) {
     return value;
   }
-  if (LLVMTypeOf(value) == llvm_target_type) {
-    return value;
-  }
+
   if (target_type.type == get_type_from_name("bool").type) {
     return LLVMBuildICmp(gen->builder, LLVMIntNE, value,
                          LLVMConstInt(LLVMTypeOf(value), 0, 0), "");
@@ -1352,15 +1473,20 @@ LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
       int constructor_index = get_constructor_with_single_arg_matching_type(
           cdef, LLVMTypeOf(value));
       if (constructor_index < 0) {
-        printf("Cannot convert type ");
-        fflush(stdout);
-        LLVMDumpType(LLVMTypeOf(value));
-        fflush(stdout);
-        printf(" to type ");
-        fflush(stdout);
-        LLVMDumpType(target_type.type);
-        fflush(stdout);
-        printf(".\n");
+        if (LLVMTypeOf(value) == target_type.type &&
+            target_type.kind == CLASS) {
+          printf("No copy constructor found for class %s\n", target_type.name);
+        } else {
+          printf("Cannot convert type ");
+          fflush(stdout);
+          LLVMDumpType(LLVMTypeOf(value));
+          fflush(stdout);
+          printf(" to type ");
+          fflush(stdout);
+          LLVMDumpType(target_type.type);
+          fflush(stdout);
+          printf(".\n");
+        }
         exit(1);
       }
       constructor_t c = cdef.constructors.items[constructor_index];
@@ -1371,8 +1497,8 @@ LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
         ptr = gen->current_ptr;
       }
       if (!gen->is_new) {
-        defer_elem_t elem = {get_named_values_scope(), target_type, ptr};
-        da_append(&gen->defers, elem);
+        defer_elem_t elem = {get_named_values_scope(1), target_type, ptr};
+        add_defer(elem);
       }
       lvalues args = {0};
       da_append(&args, ptr);
@@ -1387,6 +1513,18 @@ LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
     }
   }
   return value;
+}
+
+LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
+  LLVMTypeRef llvm_target_type = type_to_llvm(target_type);
+  if (LLVMTypeOf(value) == llvm_target_type) {
+    return value;
+  }
+  // if (LLVMGetTypeKind(LLVMTypeOf(value)) == LLVMPointerTypeKind &&
+  //     target_type.kind == PTR) {
+  //   return value;
+  // }
+  return generate_cast_no_check(value, target_type);
 }
 
 void generate_return(ast_t *ret) {
@@ -1485,6 +1623,15 @@ bool does_type_exist(char *name) {
     }
   }
   return false;
+}
+
+int does_method_exist(class_entry_t c, char *name) {
+  for (size_t i = 0; i < c.methods.count; i++) {
+    if (strcmp(c.methods.items[i].name, name) == 0) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 class_entry_t entry_from_cdef(ast_class_t cdef) {
