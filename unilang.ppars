@@ -61,6 +61,11 @@ arglist: @list elem=%param separator=','
 
 funcallargs: @list elem=%expr separator=','
 
+size_dir:
+  | '@size' %type => {
+    return new_size_dir(%{1%});
+  }
+
 cast_like_dir: 
   | '@as' %type %leaf => {
     return new_as_dir(%{1%}, %{2%});
@@ -75,6 +80,7 @@ leaf:
   | %identifier    => { return %{0%}; }
   | %unary         => { return %{0%}; }
   | %cast_like_dir => { return %{0%}; }
+  | %size_dir      => { return %{0%}; }
 
 
 expr:
@@ -93,10 +99,12 @@ stmt:
   
 
 decl:
-  | %ct_cte     => { return %{0%}; }
-  | %fundef     => { return %{0%}; }
-  | %vardef     => { return %{0%}; }
-  | %class_decl => { return %{0%}; }
+  | %ct_cte       => { return %{0%}; }
+  | %include_dir  => { return %{0%}; }
+  | %fundef       => { return %{0%}; }
+  | %vardef       => { return %{0%}; }
+  | %class_decl   => { return %{0%}; }
+  | %interface    => { return %{0%}; }
 
 binop: => {
   *worked = 1;
@@ -159,7 +167,36 @@ program: %program_list => {
   return new_compound(%{0%});
 }
 
+tempelem: %identifier 'impl' %identifier => {
+  return new_tempelem(%{0%}, %{1%});
+}
+
+templist: @list elem=%tempelem separator=','
+
+template: 
+  | '<' %templist '>' => { return %{1%}; }
+
+
 fundef_letless: 
+  | %identifier %template '(' %arglist ')' ':' %type '=>' %compound => {
+    ast_t *id = %{0%};
+    ast_t *type = %{6%};
+    tmp_param_t **tmp_arglist = %{3%};
+    ast_t *stmt_list = %{8%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
+  }
+  | %identifier %template '(' ')' ':' %type '=>' %compound => {
+    ast_t *id = %{0%};
+    ast_t *type = %{5%};
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *stmt_list = %{7%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
+  }
   | %identifier '(' %arglist ')' ':' %type '=>' %compound => {
     ast_t *id = %{0%};
     ast_t *type = %{5%};
@@ -292,17 +329,30 @@ class_body_item:
     return new_member(var, access_spec, is_static);
   }
 
-class_decl: 'class' %identifier '=>' '{' %class_body '}' => {
-  ast_t *iden = %{1%};
-  token_t name = iden->as.identifier.tok;
-  free_ast(iden);
-  ast_t **body = %{4%};
-  size_t count = 0;
-  while(body[count]){
-    count++;
+class_decl: 
+  | 'class' %template %identifier '=>' '{' %class_body '}' => {
+    ast_t *temp = %{1%};
+    ast_t *iden = %{2%};
+    token_t name = iden->as.identifier.tok;
+    free_ast(iden);
+    ast_t **body = %{5%};
+    size_t count = 0;
+    while(body[count]){
+      count++;
+    }
+    return new_class(name, count, body, temp);
   }
-  return new_class(name, count, body);
-}
+  | 'class' %identifier '=>' '{' %class_body '}' => {
+    ast_t *iden = %{1%};
+    token_t name = iden->as.identifier.tok;
+    free_ast(iden);
+    ast_t **body = %{4%};
+    size_t count = 0;
+    while(body[count]){
+      count++;
+    }
+    return new_class(name, count, body, NULL);
+  }
 
 if_statement:
   | 'if' %expr '=>' %stmt 'else' %stmt => {
@@ -331,3 +381,44 @@ return:
   }
   | 'return' ';' => { return new_return(NULL); }
 
+include_dir: 
+  | '@include' %expr => { return new_include_dir(%{1%}); }
+
+
+proto:
+  | %identifier '(' %arglist ')' ':' %type => {
+    ast_t *id = %{0%};
+    ast_t *type = %{5%};
+    tmp_param_t **tmp_arglist = %{2%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, NULL, type);
+  }
+  | %identifier '(' ')' ':' %type => {
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *id = %{0%};
+    ast_t *type = %{4%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, NULL, type);
+  }
+
+proto_list: @list elem=%proto separator=','
+
+interface: 
+  'interface' %identifier %identifier '=>' '{' %proto_list '}' 
+  => {
+    ast_t *name_ptr = %{1%};
+    ast_t *type_ptr = %{2%};
+    token_t name = name_ptr->as.identifier.tok;
+    token_t type = type_ptr->as.identifier.tok;
+    free_ast(name_ptr);
+    free_ast(type_ptr);
+    ast_t **protos =%{5%};
+    size_t protos_count = 0;
+    while(protos[protos_count]){
+      protos_count++;
+    }
+    return new_interface(type, name, protos, protos_count); 
+  }

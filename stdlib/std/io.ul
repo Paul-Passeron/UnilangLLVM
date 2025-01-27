@@ -1,0 +1,48 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let intlen(n: int, b: int): int => {
+  let a: int => n / b;
+  if a => return intlen(a, b) + 1;
+  return 1;
+}
+
+let print(s: char *): void => {
+  syscall(1, 1, s, strlen(s));
+}
+
+let printc(c: char): void => {
+  syscall(1, 1, &c, 1);
+}
+
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  printc(x % 10 + 48);
+}
+
+let nl(): void => {
+  printc(10);
+}
+
+let read(fd: int, s: char *, len: u32): void => {
+  syscall(0, fd, s, len);
+}
+
+let getchar(fd: int): char => {
+  let c: char;
+  read(fd, &c, 1);
+  return c;
+}
+
+let write(fd: int, s: char *): void => {
+  syscall(1, fd, s, strlen(s));
+}
+
+let is_ws(c: char): bool => {
+  return c = ' ' || c = '\n' || c = '\t'; 
+}
+

@@ -82,39 +82,39 @@ void dump_ast(ast_t *ast) {
     return;
   }
   printf("{");
-  printf("  \"kind\": ");
+  printf("\"kind\": ");
   switch (ast->kind) {
   case AST_IDENTIFIER:
     printf("\"AST_IDENTIFIER\",");
-    printf("  \"value\": \"");
+    printf("\"value\": \"");
     print_token(ast->as.identifier.tok);
     printf("\"");
     break;
   case AST_INTLIT:
     printf("\"AST_INTLIT\",");
-    printf("  \"value\": \"" SF "\"",
+    printf("\"value\": \"" SF "\"",
            SA(ast->as.intlit.tok.lexeme)); // Assuming tok.value is a string
                                            // representation of the integer
     break;
   case AST_FLOATLIT:
     printf("\"AST_FLOATLIT\",");
-    printf("  \"value\": \"" SF "\"", SA(ast->as.floatlit.tok.lexeme));
+    printf("\"value\": \"" SF "\"", SA(ast->as.floatlit.tok.lexeme));
     break;
   case AST_CHARLIT:
     printf("\"AST_CHARLIT\",");
-    printf("  \"value\": \"" SF "\"", SA(ast->as.charlit.tok.lexeme));
+    printf("\"value\": \"" SF "\"", SA(ast->as.charlit.tok.lexeme));
     break;
   case AST_STRINGLIT:
     printf("\"AST_STRINGLIT\",");
-    printf("  \"value\": " SF, SA(ast->as.stringlit.tok.lexeme));
+    printf("\"value\": " SF, SA(ast->as.stringlit.tok.lexeme));
     break;
   case AST_BOOLLIT:
     printf("\"AST_BOOLLIT\",");
-    printf("  \"value\": %s", ast->as.boollit.val ? "true" : "false");
+    printf("\"value\": %s", ast->as.boollit.val ? "true" : "false");
     break;
   case AST_FUNDEF: {
     printf("\"AST_FUNDEF\",");
-    printf("  \"name\": \"");
+    printf("\"name\": \"");
     print_token(ast->as.fundef.name);
     printf("\", ");
     if (ast->as.fundef.return_type) {
@@ -267,6 +267,31 @@ void dump_ast(ast_t *ast) {
     printf(", \"expr\": ");
     dump_ast(ast->as.as_dir.expr);
   } break;
+  case AST_INCLUDE_DIR: {
+    printf("\"AST_INCLUDE_DIR\",\"included\": ");
+    dump_ast(ast->as.include_dir.expr);
+  } break;
+  case AST_SIZE_DIR: {
+    printf("\"AST_SIZE_DIR\", \"type\": ");
+    dump_ast(ast->as.size_dir.type);
+  } break;
+  case AST_TEMPELEM: {
+    printf("\"AST_TEMPELEM\"");
+    // TODO !
+  } break;
+  case AST_INTERFACE: {
+    printf("\"AST_INTERFACE\", ");
+    printf("\"name\": \"" SF "\",", SA(ast->as.interface.name.lexeme));
+    printf("\"type\": \"" SF "\",", SA(ast->as.interface.type.lexeme));
+    printf("\"protos\": [");
+    for (size_t i = 0; i < ast->as.interface.protos_count; ++i) {
+      if (i > 0) {
+        printf(", ");
+      }
+      dump_ast(ast->as.interface.protos[i]);
+    }
+    printf("]");
+  } break;
   default:
     printf("\"UNKNOWN_KIND\"");
     break;
@@ -373,6 +398,22 @@ void free_ast(ast_t *ast) {
     printf("TODO AST_NEW_DIR\n");
     exit(1);
   }
+  case AST_INCLUDE_DIR: {
+    printf("TODO: AST_INCLUDE_DIR\n");
+    exit(1);
+  }
+  case AST_SIZE_DIR: {
+    printf("TODO: AST_SIZE_DIR\n");
+    exit(1);
+  }
+  case AST_INTERFACE: {
+    printf("TODO: AST_INTERFACE\n");
+    exit(1);
+  }
+  case AST_TEMPELEM: {
+    printf("TODO: AST_TEMPELEM\n");
+    exit(1);
+  }
   }
 }
 
@@ -435,7 +476,8 @@ void free_compound(ast_t *ast) {
 ast_t *new_funcall(ast_t *called, size_t arg_count, ast_t **args) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_FUNCALL;
-  res->as.funcall = (ast_funcall_t){called, arg_count, args};
+  // TODO: handle templated types
+  res->as.funcall = (ast_funcall_t){called, arg_count, args, NULL};
   return res;
 }
 
@@ -497,10 +539,11 @@ ast_t *new_member(ast_t *fdef, token_t specifier, int is_static) {
   return res;
 }
 
-ast_t *new_class(token_t name, size_t field_count, ast_t **fields) {
+ast_t *new_class(token_t name, size_t field_count, ast_t **fields,
+                 ast_t *temp) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_CLASS;
-  res->as.clazz = (ast_class_t){name, field_count, fields};
+  res->as.clazz = (ast_class_t){name, field_count, fields, temp};
   return res;
 }
 
@@ -550,5 +593,34 @@ ast_t *new_new_dir(ast_t *type, ast_t *expr) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_NEW_DIR;
   res->as.as_dir = (ast_new_dir_t){type, expr};
+  return res;
+}
+
+ast_t *new_include_dir(ast_t *expr) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_INCLUDE_DIR;
+  res->as.include_dir.expr = expr;
+  return res;
+}
+
+ast_t *new_size_dir(ast_t *type) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_SIZE_DIR;
+  res->as.size_dir.type = type;
+  return res;
+}
+
+ast_t *new_tempelem(ast_t *t, ast_t *interface) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_TEMPELEM;
+  res->as.tempelem = (ast_tempelem_t){t, interface};
+  return res;
+}
+
+ast_t *new_interface(token_t type, token_t name, ast_t **protos,
+                     size_t protos_count) {
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_INTERFACE;
+  res->as.interface = (ast_interface_t){type, name, protos, protos_count};
   return res;
 }

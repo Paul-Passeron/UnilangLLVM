@@ -1,0 +1,19 @@
+let exit(code: int): void => {
+  syscall(60, code);
+}
+
+let open(s: char *, flags: int, mode: int): int => {
+  return syscall(2, s, flags, mode);
+}
+
+let close(fd: int): void => {
+  syscall(3, fd);
+}
+
+let memcpy(dst: char *, src: char *, n: u32): void => {
+  let i: u32 => 0;
+  while i < n => {
+    dst[i] => src[i];
+    i => i + 1;
+  }
+}

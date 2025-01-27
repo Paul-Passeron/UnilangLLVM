@@ -41,6 +41,9 @@ void *parse_arglist(lexer_t *l, int *worked);
 // RULE funcallargs
 void *parse_funcallargs(lexer_t *l, int *worked);
 
+// RULE size_dir
+void *parse_size_dir(lexer_t *l, int *worked);
+
 // RULE cast_like_dir
 void *parse_cast_like_dir(lexer_t *l, int *worked);
 
@@ -82,6 +85,15 @@ void *parse_program_list(lexer_t *l, int *worked);
 
 // RULE program
 void *parse_program(lexer_t *l, int *worked);
+
+// RULE tempelem
+void *parse_tempelem(lexer_t *l, int *worked);
+
+// RULE templist
+void *parse_templist(lexer_t *l, int *worked);
+
+// RULE template
+void *parse_template(lexer_t *l, int *worked);
 
 // RULE fundef_letless
 void *parse_fundef_letless(lexer_t *l, int *worked);
@@ -133,5 +145,17 @@ void *parse_assignement(lexer_t *l, int *worked);
 
 // RULE return
 void *parse_return(lexer_t *l, int *worked);
+
+// RULE include_dir
+void *parse_include_dir(lexer_t *l, int *worked);
+
+// RULE proto
+void *parse_proto(lexer_t *l, int *worked);
+
+// RULE proto_list
+void *parse_proto_list(lexer_t *l, int *worked);
+
+// RULE interface
+void *parse_interface(lexer_t *l, int *worked);
 
 #endif // PPARSER_H

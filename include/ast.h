@@ -37,6 +37,10 @@ typedef enum ast_kind_t {
   AST_MEMBER,
   AST_AS_DIR,
   AST_NEW_DIR,
+  AST_INCLUDE_DIR,
+  AST_SIZE_DIR,
+  AST_TEMPELEM,
+  AST_INTERFACE,
 } ast_kind_t;
 
 typedef struct ast_identifier_t {
@@ -59,6 +63,7 @@ typedef struct ast_fundef_t {
   ast_t **param_types;
   token_t *param_names;
   ast_t *body;
+  // ast_t *temp;
 } ast_fundef_t;
 
 typedef struct tmp_param_t {
@@ -77,6 +82,7 @@ typedef struct ast_funcall_t {
   ast_t *called;
   size_t arg_count;
   ast_t **args;
+  ast_t *templ;
 } ast_funcall_t;
 
 typedef struct ast_index_t {
@@ -122,6 +128,7 @@ typedef struct ast_class_t {
   token_t name;
   size_t field_count;
   ast_t **fields;
+  ast_t *temp;
 } ast_class_t;
 
 typedef struct ast_if_stmt_t {
@@ -155,7 +162,37 @@ typedef struct ast_as_dir_t {
   ast_t *expr;
 } ast_as_dir_t;
 
+typedef struct ast_include_dir_t {
+  ast_t *expr;
+} ast_include_dir_t;
+
 typedef ast_as_dir_t ast_new_dir_t;
+
+typedef struct ast_size_dir_t {
+  ast_t *type;
+} ast_size_dir_t;
+
+typedef struct ast_tempelem_t {
+  ast_t *type_iden;
+  ast_t *interface;
+} ast_tempelem_t;
+
+typedef struct ast_template_expr_t {
+  ast_t **types;
+  size_t types_count;
+} ast_template_expr_t;
+
+typedef struct ast_template_decl_t {
+  ast_t **tempelems;
+  size_t elems_count;
+} ast_template_decl_t;
+
+typedef struct ast_interface_t {
+  token_t type;
+  token_t name;
+  ast_t **protos;
+  size_t protos_count;
+} ast_interface_t;
 
 typedef union ast_as_t {
   ast_identifier_t identifier;
@@ -183,6 +220,10 @@ typedef union ast_as_t {
   ast_member_t member;
   ast_as_dir_t as_dir;
   ast_new_dir_t new_dir;
+  ast_include_dir_t include_dir;
+  ast_size_dir_t size_dir;
+  ast_tempelem_t tempelem;
+  ast_interface_t interface;
 } ast_as_t;
 
 struct ast_t {
@@ -207,7 +248,7 @@ ast_t *new_method(ast_t *fdef, token_t specifier, int is_abstract,
 
 ast_t *new_member(ast_t *var, token_t specifier, int is_static);
 
-ast_t *new_class(token_t name, size_t field_count, ast_t **fields);
+ast_t *new_class(token_t name, size_t field_count, ast_t **fields, ast_t *temp);
 
 ast_t *new_if_stmt(ast_t *cond, ast_t *body, ast_t *other_body);
 
@@ -256,6 +297,19 @@ void free_as_dir(ast_t *ast);
 
 ast_t *new_new_dir(ast_t *type, ast_t *expr);
 void free_new_dir(ast_t *ast);
+
+ast_t *new_include_dir(ast_t *expr);
+void free_include_dir(ast_t *ast);
+
+ast_t *new_size_dir(ast_t *type);
+void free_size_dir(ast_t *ast);
+
+ast_t *new_tempelem(ast_t *t, ast_t *interface);
+void free_tempelem(ast_t *ast);
+
+ast_t *new_interface(token_t type, token_t name, ast_t **protos,
+                     size_t protos_count);
+void free_interface(ast_t *ast);
 
 void dump_ast(ast_t *ast);
 void free_ast(ast_t *ast);

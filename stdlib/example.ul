@@ -1,0 +1,13 @@
+@include std::string
+@include std::sys
+
+let foo(x: int): int => {
+  (@as string x)::println();
+  return 0;
+}
+
+let main(): int => {
+  let ptr: int * => malloc(@size int);
+  foo(4);
+  return 0;
+}

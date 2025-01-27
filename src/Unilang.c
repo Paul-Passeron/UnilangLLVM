@@ -100,13 +100,14 @@ int main(int argc, char **argv) {
     printf("Parsing failed\n");
     exit(1);
   }
+
   generator_t g;
   generator_init(&g);
 
   generate_program(prog);
   fflush(stdout);
 
-  LLVMDumpModule(g.module);
+  // LLVMDumpModule(g.module);
 
   char *error = NULL;
   if (LLVMVerifyModule(g.module, LLVMPrintMessageAction, &error)) {

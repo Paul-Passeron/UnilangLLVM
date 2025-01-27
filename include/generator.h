@@ -135,6 +135,18 @@ struct named_value_entry_t {
   LLVMValueRef value;
 };
 
+typedef struct interface_entry_t {
+  char *name;
+  char *type;
+  functions protos;
+} interface_entry_t;
+
+typedef struct interfaces {
+  interface_entry_t *items;
+  size_t count;
+  size_t capacity;
+} interfaces;
+
 typedef struct generator_t generator_t;
 struct generator_t {
   LLVMContextRef context;
@@ -149,6 +161,8 @@ struct generator_t {
   LLVMValueRef current_ptr;
   int current_function_scope;
   int is_new;
+  LLVMBasicBlockRef last_bb;
+  interfaces interfaces;
 };
 
 typedef struct ltypes {
@@ -191,6 +205,7 @@ void generate_decl(ast_t *decl);
 void generate_fundef(ast_t *fundef);
 void generate_vardef(ast_t *vardef);
 void generate_classdef(ast_t *classdef);
+void generate_classdef_for_include(ast_t *classdef);
 void generate_ct_cte(ast_t *ct_cte);
 
 void generate_statement(ast_t *stmt);
@@ -227,5 +242,8 @@ type_t get_return_type(ast_t *funcall);
 class_entry_t get_class_by_name(const char *name);
 method_t get_method_by_name(class_entry_t cdef, const char *name);
 int does_method_exist(class_entry_t c, char *name);
+
+function_entry_t entry_from_fundef(ast_t *fundef);
+void add_function_from_entry(function_entry_t entry);
 
 #endif // GENERATOR_H

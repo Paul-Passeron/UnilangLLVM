@@ -126,6 +126,7 @@ class string => {
   },
 
   public destroy(): void => {
+    print("Destroying\n");
     if self::len = 0 => return;
     self::len => 0;
     free(self::contents);
@@ -139,16 +140,22 @@ class string => {
   }
 }
 
+let getline()
+
 let main(): int => {
   let s: string => "Hello, ";
-  s::append(" whattt");
   let s2: string => "World !";
   s::append(s2);
+  s::append(" whattt");
   s::println();
   (@as string 123456)::println();
+  let leaker: string => @new string "Am I leaking ?";
+  leaker::println();
+  (@as string "Not for long")::println();
+  leaker::destroy();
   let s3: string => " World !";
   ((@as string "Hello") + 5)::println();
   let a: string => "Hello";
-  (a + "Hello")::println();
+  (a + " World")::println();
   return 0;
 }
