@@ -21,9 +21,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SEGFAULT *(char *)0 = 0
+#define CRASH
+
+#ifdef CRASH
+#define EXIT                                                                   \
+  *(char *)0 = 0;                                                              \
+  exit(1)
+#else
+#define EXIT exit(1)
+#endif
 
 #define generate_classdef(cdef) generate_classdef_pro(cdef, false);
+
+#define t_of_expr(ast) sanitize_type(t_of_expr_unsafe(ast))
 
 generator_t *gen = NULL;
 
@@ -57,7 +67,7 @@ char *get_include_postfix(ast_t *expr) {
     printf("Bad include expression: ");
     dump_ast(expr);
     printf("\n");
-    exit(1);
+    EXIT;
   }
   char *left = get_include_postfix(expr->as.binop.lhs);
   int ll = strlen(left);
@@ -87,7 +97,7 @@ type_t get_type_from_name(const char *name) {
   printf("Type %s does not exist in the current context\n", name);
   printf("Context: ");
   print_types();
-  exit(1);
+  EXIT;
 }
 
 type_t get_type_from_llvm(LLVMTypeRef type) {
@@ -102,7 +112,7 @@ type_t get_type_from_llvm(LLVMTypeRef type) {
   fflush(stdout);
   LLVMDumpType(type);
   printf("\n");
-  exit(1);
+  EXIT;
 }
 
 void print_type(type_t type) {
@@ -288,7 +298,7 @@ void generate_defer(defer_elem_t elem) {
     printf("Can only defer classes. Here: %s\n",
            elem.t.kind == BUILTIN ? "builtin" : "ptr");
     printf("\n");
-    exit(1);
+    EXIT;
   }
   class_entry_t c = get_class_by_name(elem.t.name);
   if (does_method_exist(c, "destroy") < 0) {
@@ -343,8 +353,8 @@ class_entry_t get_templated_class_by_name(char *class_name) {
     }
   }
   printf("Could not find templated class %s\n", class_name);
-  // SEGFAULT;
-  exit(1);
+  // EXIT;
+  EXIT;
 }
 
 type_t generate_templated_class_type(ast_t *type) {
@@ -365,7 +375,7 @@ type_t generate_templated_class_type(ast_t *type) {
     printf("Cannot instantiate class %s with templated types because class "
            "is not templated.\n",
            class_name);
-    exit(1);
+    EXIT;
   }
   // check the number of types it must be instanciated with
   size_t got = type->as.type.inst_template->as.temp.count;
@@ -374,7 +384,7 @@ type_t generate_templated_class_type(ast_t *type) {
     printf("Cannot instantiate class %s because it expects %ld template "
            "arguments but got %ld.\n",
            class_name, actual, got);
-    exit(1);
+    EXIT;
   }
   bool found = false;
   int found_index = -1;
@@ -442,7 +452,7 @@ type_t generate_templated_class_type(ast_t *type) {
     }
     if (cdef.ast == NULL) {
       printf("AST IS NULL ....\n");
-      exit(1);
+      EXIT;
     }
     char name[1024] = {0};
     sprintf(name, "%sZ%d", cdef.name, inst_id);
@@ -510,7 +520,7 @@ void generate_include(ast_t *include) {
   FILE *f = fopen(include_path, "r");
   if (f == NULL) {
     printf("Could not include %s\n", include_path);
-    exit(1);
+    EXIT;
   }
   string_view_t s = from_file(f);
   fclose(f);
@@ -521,7 +531,7 @@ void generate_include(ast_t *include) {
   ast_t *prog = parse_program(&l, &worked);
   if (!worked) {
     printf("Could not include %s\n", include_path);
-    exit(1);
+    EXIT;
   }
   // TODO: generate all entries from it !
   // no need to actually geenrate ir because the library will be linked
@@ -539,7 +549,7 @@ void generate_include(ast_t *include) {
       generate_include(decl);
     } else {
       printf("TODO: decl type %d not supported in include !\n", decl->kind);
-      exit(1);
+      EXIT;
     }
   }
 }
@@ -579,7 +589,7 @@ void generate_decl(ast_t *decl) {
     printf("Unexpected declaration kind: ");
     dump_ast(decl);
     printf("\n");
-    exit(1);
+    EXIT;
   }
   }
 }
@@ -656,8 +666,8 @@ type_t get_aliased_with_name(const char *name) {
          name);
   printf("Current context:\n");
   print_types();
-  // SEGFAULT
-  exit(1);
+  EXIT;
+  // EXIT;
 }
 
 LLVMTypeRef type_to_llvm_pro(type_t t) {
@@ -807,7 +817,7 @@ function_entry_t f_by_name(const char *name) {
     }
   }
   printf("%s:%d : error: undefined function '%s'\n", __FILE__, __LINE__, name);
-  exit(1);
+  EXIT;
 }
 
 function_entry_t get_global_function(ast_t *called) {
@@ -825,7 +835,7 @@ method_t get_method_by_name(class_entry_t cdef, const char *name) {
     }
   }
   printf("error: undefined method '%s' in class %s.\n", name, cdef.name);
-  exit(1);
+  EXIT;
 }
 
 class_entry_t get_class_by_name(const char *name) {
@@ -835,8 +845,7 @@ class_entry_t get_class_by_name(const char *name) {
     }
   }
   printf("No class named %s found.\n", name);
-  // SEGFAULT
-  exit(1);
+  EXIT;
 }
 
 type_t get_return_type(ast_t *funcall) {
@@ -851,7 +860,7 @@ type_t get_return_type(ast_t *funcall) {
              __LINE__);
       dump_ast(called);
       printf("\n");
-      exit(1);
+      EXIT;
     }
     type_t t = t_of_expr(called->as.binop.lhs);
     if (t.kind == PTR) {
@@ -859,20 +868,20 @@ type_t get_return_type(ast_t *funcall) {
     }
     if (t.kind != CLASS) {
       printf("error: cannot call non-class method\n");
-      exit(1);
+      EXIT;
     }
 
     class_entry_t cdef = get_class_by_name(t.name);
     if (called->as.binop.rhs->kind != AST_IDENTIFIER) {
       printf("error: cannot call method with non-identifier name\n");
-      exit(1);
+      EXIT;
     }
     char *name = sv_to_cstr(called->as.binop.rhs->as.identifier.tok.lexeme);
     method_t m = get_method_by_name(cdef, name);
-    return m.return_type;
+    return get_type_used_in_class(cdef, m.return_type);
   }
   printf("Unreachable 1\n");
-  exit(1);
+  EXIT;
 }
 
 LLVMValueRef generate_funcall(ast_t *funcall) {
@@ -884,7 +893,7 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
         !entry.is_var_args) {
       printf("error: function %s takes %ld arguments but %ld were given.\n",
              entry.name, entry.arg_names.count, funcall->as.funcall.arg_count);
-      exit(1);
+      EXIT;
     }
     for (size_t i = 0; i < funcall->as.funcall.arg_count; ++i) {
       type_t t = entry.arg_types.items[i];
@@ -909,7 +918,7 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
              __LINE__);
       dump_ast(called);
       printf("\n");
-      exit(1);
+      EXIT;
     }
     type_t t = t_of_expr(called->as.binop.lhs);
     t = sanitize_type(t);
@@ -922,13 +931,13 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
       printf("\n");
       dump_ast(called);
 
-      exit(1);
+      EXIT;
     }
 
     class_entry_t cdef = get_class_by_name(t.name);
     if (called->as.binop.rhs->kind != AST_IDENTIFIER) {
       printf("error: cannot call method with non-identifier name\n");
-      exit(1);
+      EXIT;
     }
     char *name = sv_to_cstr(called->as.binop.rhs->as.identifier.tok.lexeme);
     method_t m = get_method_by_name(cdef, name);
@@ -939,7 +948,7 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
       printf("error: expected %ld arguments for method %s of class %s but got "
              "%ld.\n",
              m.arg_names.count, name, cdef.name, funcall->as.funcall.arg_count);
-      exit(1);
+      EXIT;
     }
     for (size_t i = 0; i < m.arg_names.count; ++i) {
       ast_t *expr = funcall->as.funcall.args[i];
@@ -959,7 +968,7 @@ LLVMValueRef generate_funcall(ast_t *funcall) {
     return res;
   }
   printf("Unreachable 2\n");
-  exit(1);
+  EXIT;
 }
 
 int get_index_of_field(const char *field_name, class_entry_t cdef) {
@@ -969,7 +978,7 @@ int get_index_of_field(const char *field_name, class_entry_t cdef) {
     }
   }
   printf("No field %s in class %s.\n", field_name, cdef.name);
-  exit(1);
+  EXIT;
 }
 
 int get_binop_method_index(token_kind_t op, class_entry_t cdef) {
@@ -989,7 +998,7 @@ int get_binop_method_index(token_kind_t op, class_entry_t cdef) {
   } break;
   default: {
     printf("%s:%d TODO: other op kinds\n", __FILE__, __LINE__);
-    exit(1);
+    EXIT;
   }
   }
   return does_method_exist(cdef, name);
@@ -1040,18 +1049,18 @@ type_t t_of_expr_unsafe(ast_t *expr) {
       }
       if (lhs.kind != CLASS) {
         printf("Cannot access field of non-class type %s\n", lhs.name);
-        exit(1);
+        EXIT;
       }
       class_entry_t c = get_class_by_name(lhs.name);
       if (expr->as.binop.rhs->kind != AST_IDENTIFIER) {
         printf("Expected identifier for field name\n");
-        exit(1);
+        EXIT;
       }
       char *field_name =
           sv_to_cstr(expr->as.binop.rhs->as.identifier.tok.lexeme);
       int index = get_index_of_field(field_name, c);
       free(field_name);
-      return c.members.items[index].type;
+      return get_type_used_in_class(c, c.members.items[index].type);
     }
     if (is_cmp(expr->as.binop.op.kind)) {
       return get_type_from_name("bool");
@@ -1064,10 +1073,10 @@ type_t t_of_expr_unsafe(ast_t *expr) {
       if (index < 0) {
         printf("No method for '" SF "' binop in class %s\n",
                SA(expr->as.binop.op.lexeme), lt.name);
-        exit(1);
+        EXIT;
       }
       method_t m = cdef.methods.items[index];
-      return m.return_type;
+      return get_type_used_in_class(cdef, m.return_type);
     }
     if (type_to_llvm(lt) == type_to_llvm(rt)) {
       return lt;
@@ -1089,7 +1098,7 @@ type_t t_of_expr_unsafe(ast_t *expr) {
     int index = get_named_value(name);
     if (index < 0) {
       printf("Identifier %s not declared in the current scope\n", name);
-      exit(1);
+      EXIT;
     }
     type_t res = gen->named_values.items[index].t;
     free(name);
@@ -1107,7 +1116,7 @@ type_t t_of_expr_unsafe(ast_t *expr) {
       return dereference_type(t);
     }
     printf("%s:%d TODO: get type of unop\n", __FILE__, __LINE__);
-    exit(1);
+    EXIT;
   } break;
   case AST_AS_DIR:
   case AST_NEW_DIR: {
@@ -1130,12 +1139,12 @@ type_t t_of_expr_unsafe(ast_t *expr) {
   default: {
     printf("%s:%d TODO: get type of expression %d\n", __FILE__, __LINE__,
            expr->kind);
-    exit(1);
+    EXIT;
   }
   }
 }
 
-type_t t_of_expr(ast_t *ast) { return sanitize_type(t_of_expr_unsafe(ast)); }
+// type_t t_of_expr(ast_t *ast) { return sanitize_type(t_of_expr_unsafe(ast)); }
 
 void add_defer(defer_elem_t d) {
   for (size_t i = 0; i < gen->defers.count; ++i) {
@@ -1168,7 +1177,7 @@ LLVMValueRef generate_binop(ast_t *binop) {
     if (index < 0) {
       printf("No method for '" SF "' binop in class %s\n",
              SA(binop->as.binop.op.lexeme), lt.name);
-      exit(1);
+      EXIT;
     }
     gen->current_ptr = NULL;
     method_t m = cdef.methods.items[index];
@@ -1230,7 +1239,7 @@ LLVMValueRef generate_binop(ast_t *binop) {
   case MODULO: {
     if (strcmp(lt.name, "float") == 0) {
       printf("TODO: no %% for floats\n");
-      exit(1);
+      EXIT;
     }
     res = LLVMBuildSRem(gen->builder, lhs, rhs, "");
   } break;
@@ -1309,7 +1318,7 @@ LLVMValueRef generate_binop(ast_t *binop) {
   default: {
     printf("%s:%d TODO: generate binary operation %d\n", __FILE__, __LINE__,
            binop->as.binop.op.kind);
-    exit(1);
+    EXIT;
   }
   }
   if (is_ptr) {
@@ -1351,7 +1360,7 @@ LLVMValueRef generate_deref(ast_t *expr) {
     fflush(stdout);
     printf(".\n");
     fflush(stdout);
-    exit(1);
+    EXIT;
   }
   LLVMValueRef ptr = generate_expression(expr->as.unop.operand);
   type_t res_type = dereference_type(t);
@@ -1375,13 +1384,13 @@ LLVMValueRef generate_unop(ast_t *expr) {
     }
     if (t.kind != BUILTIN) {
       printf("Cannot '-' non builtin types for now\n");
-      exit(1);
+      EXIT;
     }
     return LLVMBuildSub(gen->builder, LLVMConstInt(t.type, 0, 0),
                         generate_expression(expr->as.unop.operand), "");
   }
   printf("%s:%d TODO: generate_unop.\n", __FILE__, __LINE__);
-  exit(1);
+  EXIT;
 }
 
 LLVMValueRef generate_index(ast_t *expr) {
@@ -1448,7 +1457,7 @@ LLVMValueRef generate_expression(ast_t *expr) {
     int index = get_named_value(name);
     if (index < 0) {
       printf("Identifier %s not declared in this scope 2 (%d) \n", name, index);
-      exit(1);
+      EXIT;
     }
     named_value_entry_t entry = gen->named_values.items[index];
     LLVMValueRef ptr = entry.value;
@@ -1491,7 +1500,7 @@ LLVMValueRef generate_expression(ast_t *expr) {
   default:
     printf("%s:%d TODO: generate_expression %d\n", __FILE__, __LINE__,
            expr->kind);
-    exit(1);
+    EXIT;
   }
 }
 
@@ -1603,7 +1612,7 @@ LLVMValueRef declare_constructor(class_entry_t cdef, size_t i) {
   if (i > cdef.constructors.count) {
     printf("Could not generate %s constructor %ld out of %ld\n", cdef.name, i,
            cdef.constructors.count);
-    exit(1);
+    EXIT;
   }
   constructor_t constructor = cdef.constructors.items[i];
   char name[1024] = {0};
@@ -1865,7 +1874,7 @@ void generate_classdef_pro(ast_t *classdef, bool gen_templ) {
 type_t dereference_type(type_t t) {
   if (t.kind != PTR) {
     printf("Cannot dereference non-pointer type\n");
-    exit(1);
+    EXIT;
   }
   return *t.pointed_by;
 }
@@ -1877,7 +1886,7 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
     if (index < 0) {
       printf("Identifier '%s' not declared in the current scope 1 (%d)\n", name,
              index);
-      exit(1);
+      EXIT;
     }
     free(name);
     return gen->named_values.items[index].value;
@@ -1893,14 +1902,14 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
 
       if (base_type.kind != CLASS) {
         printf("Cannot get access lm pointer from non-class type\n");
-        exit(1);
+        EXIT;
       }
       class_entry_t cdef = get_class_by_name(base_type.name);
       if (lm->as.binop.rhs->kind != AST_IDENTIFIER) {
         printf("Malformed access expression: ");
         dump_ast(lm);
         printf("\n");
-        exit(1);
+        EXIT;
       }
       char *field_name = sv_to_cstr(lm->as.binop.rhs->as.identifier.tok.lexeme);
       int index = get_index_of_field(field_name, cdef);
@@ -1916,7 +1925,7 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
       if (index < 0) {
         printf("No method for '" SF "' binop in class %s\n",
                SA(lm->as.binop.op.lexeme), lt.name);
-        exit(1);
+        EXIT;
       }
       LLVMValueRef current_ptr = gen->current_ptr;
       gen->current_ptr = NULL;
@@ -1992,7 +2001,7 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
   }
 
   printf("%s:%d TODO: get_lm_pointer %d\n", __FILE__, __LINE__, lm->kind);
-  exit(1);
+  EXIT;
 }
 
 void update_value(ast_t *lhs, LLVMValueRef rhs) {
@@ -2148,9 +2157,8 @@ LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t target_type) {
           LLVMDumpType(type_to_llvm(target_type));
           fflush(stdout);
           printf(".\n");
-          // SEGFAULT
         }
-        exit(1);
+        EXIT;
       }
       constructor_t c = cdef.constructors.items[constructor_index];
       LLVMValueRef ptr;
@@ -2189,7 +2197,7 @@ LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type) {
 void generate_return(ast_t *ret) {
   if (gen->current_function == NULL) {
     printf("Error: Return statement outside of a function.\n");
-    exit(1);
+    EXIT;
   }
   generate_defers(gen->current_function_scope);
   type_t target_type = gen->current_function->return_type;
@@ -2201,7 +2209,7 @@ void generate_return(ast_t *ret) {
       LLVMDumpType(llvm_target_type);
       fflush(stdout);
       printf(".\n");
-      exit(1);
+      EXIT;
     }
     LLVMBuildRetVoid(gen->builder);
     return;
@@ -2231,7 +2239,7 @@ LLVMValueRef generate_default_value_for_type(type_t t) {
   int default_constructor_index = get_default_constructor(c);
   if (default_constructor_index < 0) {
     printf("Error: No default constructor found for class %s.\n", c.name);
-    exit(1);
+    EXIT;
   }
   LLVMValueRef ptr;
   constructor_t cons = c.constructors.items[default_constructor_index];
@@ -2250,7 +2258,7 @@ void generate_vardef(ast_t *vardef) {
   LLVMTypeRef llvm_type = type_to_llvm(type);
   if (llvm_type == NULL) {
     printf("LLVM TYPE IS NULL !\n");
-    exit(1);
+    EXIT;
   }
   LLVMValueRef current_ptr = gen->current_ptr;
   LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, llvm_type, "var");
@@ -2289,7 +2297,7 @@ void generate_vardef(ast_t *vardef) {
 void generate_ct_cte(ast_t *ct_cte) {
   (void)ct_cte;
   printf("%s:%d TODO: generate_ct_cte\n", __FILE__, __LINE__);
-  exit(1);
+  EXIT;
 }
 
 bool does_type_exist(char *name) {

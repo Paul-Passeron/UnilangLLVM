@@ -36,21 +36,43 @@ class <t impl any> vector => {
   },
   public destroy(): void => {
     free(self::arr);
+    // TODO: introduce @destroy directive that 
+    // destroys value if it is a class 
+    // but does nothing otherwise 
+    // So that there can be no memory
+    // leaks when creating vectors of any 
+    // without having to manually manage the memory
+    // Maybe @destroy on a ptr can just free it as
+    // well
     self::count => 0;
     self::cap => 0;
     self::arr => 0;
+  },
+  public len(): int => {
+    return self::count;
   }
 }
 
 let main(): int => {
   (@as string "Hello, World !")::println();
   let v: vector<int>;
+  let c: vector<string>;
+  // c::append("Hey !");
+  // c::append("How are you ?");
+  // c::append("I'm doing great !");
   let i: int => 0;
+  while i < (c::len()) => {
+    c::at(i)::println();
+    i => i + 1;
+  }
+  i => 0;
   while i < 10000 => {
     v::append(2 * i + 1);
+    c::append(v::at(i));
     i => i + 1;
   }
   (@as string (v::at(6540)))::println();
+  c::at(6540)::println();
 
   return 0;
 }

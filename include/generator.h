@@ -250,7 +250,7 @@ LLVMValueRef fptr_from_entry(function_entry_t f);
 LLVMTypeRef ftype_from_entry(function_entry_t f);
 LLVMTypeRef type_to_llvm(type_t t);
 
-type_t t_of_expr(ast_t *expr);
+type_t t_of_expr_unsafe(ast_t *expr);
 
 type_t dereference_type(type_t t);
 
