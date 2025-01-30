@@ -119,10 +119,12 @@ paren: '(' %expr ')' => {
 
 starlist: @list elem='*'
 
+
 type: 
-  | %identifier %starlist => {
+  | %identifier %inst_template %starlist => {
     ast_t * iden = %{0%};
-    token_t **starlist = %{1%};
+    ast_t *templ = %{1%};
+    token_t **starlist = %{2%};
     size_t count = 0;
     while(starlist[count]){
       count++;
@@ -134,14 +136,37 @@ type:
     free(starlist);
     token_t tok = iden->as.identifier.tok;
     free_ast(iden);
-    return new_type(tok, count);
+    return new_type(tok, count, true, templ);
+  }
+  | %identifier %starlist => {
+    ast_t * iden = %{0%};
+    token_t **starlist = %{1%};
+    size_t count = 0;
+    while(starlist[count]){
+      count++;
+    }
+    for(size_t i = 0; i < count; ++i){
+      free(starlist[i]);
+    }
+    free(starlist);
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, count, false, NULL);
+  }
+  | %identifier %inst_template => {
+    ast_t *iden = %{0%};
+    ast_t *templ = %{1%};
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, 0, true, templ);
   }
   | %identifier => {
     ast_t *iden = %{0%};
     token_t tok = iden->as.identifier.tok;
     free_ast(iden);
-    return new_type(tok, 0);
+    return new_type(tok, 0, false, NULL);
   }
+  
 
 unary: %uop %leaf => {
   token_t *ptr = %{0%};
@@ -168,14 +193,22 @@ program: %program_list => {
 }
 
 tempelem: %identifier 'impl' %identifier => {
-  return new_tempelem(%{0%}, %{1%});
+  return new_tempelem(%{0%}, %{2%});
 }
 
 templist: @list elem=%tempelem separator=','
 
 template: 
-  | '<' %templist '>' => { return %{1%}; }
+  | '<' %templist '>' => { return new_template(%{1%}); }
 
+
+tlist: @list elem=%type separator=','
+
+inst_template:
+  | '<' %tlist '>' => {
+    // template but the args are types and not tempelems
+    return new_template(%{1%});
+  }
 
 fundef_letless: 
   | %identifier %template '(' %arglist ')' ':' %type '=>' %compound => {
@@ -407,7 +440,7 @@ proto:
 proto_list: @list elem=%proto separator=','
 
 interface: 
-  'interface' %identifier %identifier '=>' '{' %proto_list '}' 
+  |'interface' %identifier %identifier '=>' '{' %proto_list '}' 
   => {
     ast_t *name_ptr = %{1%};
     ast_t *type_ptr = %{2%};
@@ -420,5 +453,18 @@ interface:
     while(protos[protos_count]){
       protos_count++;
     }
+    return new_interface(type, name, protos, protos_count); 
+  }
+  |'interface' %identifier %identifier '=>' '{' '}' 
+  => {
+    ast_t *name_ptr = %{1%};
+    ast_t *type_ptr = %{2%};
+    token_t name = name_ptr->as.identifier.tok;
+    token_t type = type_ptr->as.identifier.tok;
+    free_ast(name_ptr);
+    free_ast(type_ptr);
+    ast_t **protos = malloc(sizeof(void*));
+    protos[0] = NULL;
+    size_t protos_count = 0;
     return new_interface(type, name, protos, protos_count); 
   }

@@ -41,6 +41,7 @@ typedef enum ast_kind_t {
   AST_SIZE_DIR,
   AST_TEMPELEM,
   AST_INTERFACE,
+  AST_TEMPLATE,
 } ast_kind_t;
 
 typedef struct ast_identifier_t {
@@ -104,6 +105,8 @@ typedef struct ast_binop_t {
 typedef struct ast_type_t {
   token_t name;
   size_t ptr_n;
+  bool is_template;
+  ast_t *inst_template;
 } ast_type_t;
 
 typedef struct ast_vardef_t {
@@ -177,22 +180,17 @@ typedef struct ast_tempelem_t {
   ast_t *interface;
 } ast_tempelem_t;
 
-typedef struct ast_template_expr_t {
-  ast_t **types;
-  size_t types_count;
-} ast_template_expr_t;
-
-typedef struct ast_template_decl_t {
-  ast_t **tempelems;
-  size_t elems_count;
-} ast_template_decl_t;
-
 typedef struct ast_interface_t {
   token_t type;
   token_t name;
   ast_t **protos;
   size_t protos_count;
 } ast_interface_t;
+
+typedef struct ast_template_t {
+  ast_t **tempelems;
+  size_t count;
+} ast_template_t;
 
 typedef union ast_as_t {
   ast_identifier_t identifier;
@@ -223,6 +221,7 @@ typedef union ast_as_t {
   ast_include_dir_t include_dir;
   ast_size_dir_t size_dir;
   ast_tempelem_t tempelem;
+  ast_template_t temp;
   ast_interface_t interface;
 } ast_as_t;
 
@@ -237,7 +236,7 @@ ast_t *new_while_stmt(ast_t *cond, ast_t *body);
 
 ast_t *new_assignement(ast_t *lhs, ast_t *rhs);
 
-ast_t *new_type(token_t name, size_t ptr_n);
+ast_t *new_type(token_t name, size_t ptr_n, bool is_template, ast_t *templ);
 
 ast_t *new_vardef(token_t name, ast_t *type, ast_t *value);
 
@@ -310,6 +309,9 @@ void free_tempelem(ast_t *ast);
 ast_t *new_interface(token_t type, token_t name, ast_t **protos,
                      size_t protos_count);
 void free_interface(ast_t *ast);
+
+ast_t *new_template(ast_t **elems);
+void free_template(ast_t *ast);
 
 void dump_ast(ast_t *ast);
 void free_ast(ast_t *ast);

@@ -45,4 +45,29 @@
     (da)->count += (new_items_count);                                          \
   } while (0)
 
+#define da_remove(da, index)                                                   \
+  do {                                                                         \
+    ASSERT(((da)->count >= (size_t)index) &&                                             \
+           "Cannot remove element out of scope in DA");                        \
+                                                                               \
+    (da)->count--;                                                             \
+    for (size_t ___i = index; ___i < (da)->count; ++___i) {                             \
+      (da)->items[___i] = (da)->items[___i + 1];                                     \
+    }                                                                          \
+  } while (0);
+
+#define da_remove_range(da, index, len)                                        \
+  do {                                                                         \
+    if ((da)->count <= len + index) {                                          \
+      printf("Cannot remove element out of scope in DA %ld / %ld",             \
+             len + index, (da)->count);                                        \
+      exit(1);                                                                 \
+    }                                                                          \
+                                                                               \
+    (da)->count -= len;                                                        \
+    for (size_t i = index; i < (da)->count; ++i) {                             \
+      (da)->items[i] = (da)->items[i + len];                                   \
+    }                                                                          \
+  } while (0);
+
 #endif // DYN_ARR_H

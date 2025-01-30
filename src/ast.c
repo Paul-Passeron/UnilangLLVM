@@ -414,6 +414,10 @@ void free_ast(ast_t *ast) {
     printf("TODO: AST_TEMPELEM\n");
     exit(1);
   }
+  case AST_TEMPLATE: {
+    printf("TODO: AST_TEMPLATE\n");
+    exit(1);
+  }
   }
 }
 
@@ -494,10 +498,10 @@ ast_t *new_binop(token_t op, ast_t *lhs, ast_t *rhs) {
   return res;
 }
 
-ast_t *new_type(token_t name, size_t ptr_n) {
+ast_t *new_type(token_t name, size_t ptr_n, bool is_template, ast_t *templ) {
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_TYPE;
-  res->as.type = (ast_type_t){name, ptr_n};
+  res->as.type = (ast_type_t){name, ptr_n, is_template, templ};
   return res;
 }
 
@@ -622,5 +626,16 @@ ast_t *new_interface(token_t type, token_t name, ast_t **protos,
   ast_t *res = malloc(sizeof(ast_t));
   res->kind = AST_INTERFACE;
   res->as.interface = (ast_interface_t){type, name, protos, protos_count};
+  return res;
+}
+
+ast_t *new_template(ast_t **elems) {
+  size_t count = 0;
+  while (elems[count]) {
+    count++;
+  }
+  ast_t *res = malloc(sizeof(ast_t));
+  res->kind = AST_TEMPLATE;
+  res->as.temp = (ast_template_t){elems, count};
   return res;
 }

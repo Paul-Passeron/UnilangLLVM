@@ -22,6 +22,10 @@ typedef enum typekind_t {
   BUILTIN,
   CLASS,
   PTR,
+  TEMPLATED,
+  ALIAS, // uses pointed_to as well but is
+         // just an alias name for the type,
+         // not a pointer.
 } typekind_t;
 
 typedef struct types {
@@ -59,6 +63,7 @@ struct type_t {
   typekind_t kind;
   LLVMTypeRef type;
   type_t *pointed_by;
+  char *interface;
 };
 
 typedef struct defer_elem_t {
@@ -114,12 +119,41 @@ typedef struct members {
   size_t capacity;
 } members;
 
+typedef struct interface_entry_t {
+  char *name;
+  char *type;
+  functions protos;
+} interface_entry_t;
+
+typedef struct interfaces {
+  interface_entry_t *items;
+  size_t count;
+  size_t capacity;
+} interfaces;
+
 struct class_entry_t {
   const char *name;
   methods methods;
   constructors constructors;
   members members;
+  bool is_templated;
+  // access those following fields
+  // only if is_templated is true !
+  strings interfaces;
+  strings interfaces_names;
+  ast_t *ast;
 };
+
+typedef struct inst_templ_class_t {
+  char *class_name;
+  types ts;
+} inst_templ_class_t;
+
+typedef struct inst_classes {
+  inst_templ_class_t *items;
+  size_t count;
+  size_t capacity;
+} inst_classes;
 
 struct function_entry_t {
   const char *name;
@@ -135,34 +169,31 @@ struct named_value_entry_t {
   LLVMValueRef value;
 };
 
-typedef struct interface_entry_t {
-  char *name;
-  char *type;
-  functions protos;
-} interface_entry_t;
-
-typedef struct interfaces {
-  interface_entry_t *items;
+typedef struct ptrs {
+  void **items;
   size_t count;
   size_t capacity;
-} interfaces;
+} ptrs;
 
 typedef struct generator_t generator_t;
 struct generator_t {
   LLVMContextRef context;
   LLVMModuleRef module;
   LLVMBuilderRef builder;
-  functions functions;
-  named_values named_values;
-  types types;
-  classes classes;
-  function_entry_t *current_function;
-  defers defers;
+  struct functions functions;
+  struct named_values named_values;
+  struct types types;
+  struct classes classes;
+  struct types temp_types;
+  struct classes classes_templates;
+  struct function_entry_t *current_function;
+  struct defers defers;
   LLVMValueRef current_ptr;
   int current_function_scope;
   int is_new;
   LLVMBasicBlockRef last_bb;
-  interfaces interfaces;
+  struct interfaces interfaces;
+  struct inst_classes inst_classes;
 };
 
 typedef struct ltypes {
@@ -204,7 +235,7 @@ void generate_program(ast_t *program);
 void generate_decl(ast_t *decl);
 void generate_fundef(ast_t *fundef);
 void generate_vardef(ast_t *vardef);
-void generate_classdef(ast_t *classdef);
+void generate_classdef_pro(ast_t *classdef, bool gen_templ);
 void generate_classdef_for_include(ast_t *classdef);
 void generate_ct_cte(ast_t *ct_cte);
 
@@ -245,5 +276,16 @@ int does_method_exist(class_entry_t c, char *name);
 
 function_entry_t entry_from_fundef(ast_t *fundef);
 void add_function_from_entry(function_entry_t entry);
+
+bool are_types_equal(type_t a, type_t b);
+type_t t_from_cdef(class_entry_t cdef);
+type_t sanitize_type(type_t t);
+
+type_t get_aliased_with_name(const char *name);
+
+void print_types(void);
+type_t get_type_used_in_class(class_entry_t cdef, type_t t);
+
+type_t get_type_from_ast(ast_t *type);
 
 #endif // GENERATOR_H

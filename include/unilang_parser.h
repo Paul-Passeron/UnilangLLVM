@@ -95,6 +95,12 @@ void *parse_templist(lexer_t *l, int *worked);
 // RULE template
 void *parse_template(lexer_t *l, int *worked);
 
+// RULE tlist
+void *parse_tlist(lexer_t *l, int *worked);
+
+// RULE inst_template
+void *parse_inst_template(lexer_t *l, int *worked);
+
 // RULE fundef_letless
 void *parse_fundef_letless(lexer_t *l, int *worked);
 

@@ -101,9 +101,10 @@ class string => {
     let old_length: int => self::len;
     let len: int => s::len();
     self::len => len + old_length;
-    if self:: len >= self::cap => {
+    if self::len >= (self::cap) => {
       self::cap => self::len * 2 + 1;
       self::contents => malloc(self::cap);
+      print_int(@as int (self::contents));
       let i: int => 0;
       while i < old_length => {
         self::contents[i] => old_contents[i];
