@@ -343,8 +343,8 @@ class_entry_t get_templated_class_by_name(char *class_name) {
     }
   }
   printf("Could not find templated class %s\n", class_name);
-  SEGFAULT;
-  // exit(1);
+  // SEGFAULT;
+  exit(1);
 }
 
 type_t generate_templated_class_type(ast_t *type) {
@@ -656,8 +656,8 @@ type_t get_aliased_with_name(const char *name) {
          name);
   printf("Current context:\n");
   print_types();
-  // exit(1);
-  *(char *)0 = 0;
+  // SEGFAULT
+  exit(1);
 }
 
 LLVMTypeRef type_to_llvm_pro(type_t t) {
@@ -835,7 +835,8 @@ class_entry_t get_class_by_name(const char *name) {
     }
   }
   printf("No class named %s found.\n", name);
-  *(char *)0 = 0;
+  // SEGFAULT
+  exit(1);
 }
 
 type_t get_return_type(ast_t *funcall) {
@@ -2147,7 +2148,7 @@ LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t target_type) {
           LLVMDumpType(type_to_llvm(target_type));
           fflush(stdout);
           printf(".\n");
-          *(char *)0 = 0;
+          // SEGFAULT
         }
         exit(1);
       }
@@ -2255,23 +2256,24 @@ void generate_vardef(ast_t *vardef) {
   LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, llvm_type, "var");
   gen->current_ptr = ptr;
   LLVMValueRef expr;
-  if (vardef->as.vardef.value != NULL) {
-    expr = generate_expression(vardef->as.vardef.value);
-  } else {
+  if (vardef->as.vardef.value == NULL) {
     if (type.kind == CLASS) {
       generate_default_value_for_type(type);
     } else {
       expr = generate_default_value_for_type(type);
-
-      if (LLVMTypeOf(expr) != llvm_type) {
-        expr = generate_cast(expr, type);
-      }
-      char *name = sv_to_cstr(vardef->as.vardef.name.lexeme);
-
-      LLVMBuildStore(gen->builder, expr, ptr);
-      LLVMSetValueName(expr, name);
-      free(name);
     }
+  } else {
+
+    expr = generate_expression(vardef->as.vardef.value);
+
+    if (LLVMTypeOf(expr) != llvm_type) {
+      expr = generate_cast(expr, type);
+    }
+    char *name = sv_to_cstr(vardef->as.vardef.name.lexeme);
+
+    LLVMBuildStore(gen->builder, expr, ptr);
+    LLVMSetValueName(expr, name);
+    free(name);
   }
   char *name = sv_to_cstr(vardef->as.vardef.name.lexeme);
 
