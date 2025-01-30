@@ -26,6 +26,10 @@ typedef enum typekind_t {
   ALIAS, // uses pointed_to as well but is
          // just an alias name for the type,
          // not a pointer.
+
+  SELF, // Used to identify templated
+        // class type inside of
+        // itself
 } typekind_t;
 
 typedef struct types {

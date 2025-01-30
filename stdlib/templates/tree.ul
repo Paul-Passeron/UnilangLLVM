@@ -1,29 +1,29 @@
-@include std::string
 @include std::sys
-// This is the interface that accepts any type 
+@include std::string
+
 interface any t => {} 
 
-class <t impl any> vector => {
-  private arr: t*,
+class <T impl any> vector => {
+  private arr: T*,
   private count: int,
   private cap: int,
   public vector() => {
     self::count => 0;
     self::cap => 16;
-    self::arr => malloc(self::cap * @size t);
+    self::arr => malloc(self::cap * @size T);
   },
-  public at(i: int): t => {
+  public at(i: int): T => {
     if i < (self::count) => {
-      return @new t (self::arr[i]);
+      return @new T (self::arr[i]);
     }
     (@as string "Could not access element at index " + i + " out of " + (self::count - 1))::println();
     exit(1);
   },
-  public append(elem: t): void => {
+  public append(elem: T): void => {
     if self::count + 1 >= (self::cap) => {
       self::cap => self::cap * 2;
-      let old_elems: t * => self::arr;
-      self::arr => malloc(self::cap * @size t);
+      let old_elems: T * => self::arr;
+      self::arr => malloc(self::cap * @size T);
       let i: int => 0;
       while i < (self::count) => {
         self::arr[i] => old_elems[i];
@@ -53,24 +53,16 @@ class <t impl any> vector => {
   }
 }
 
-let main(): int => {
-  (@as string "Hello, World !")::println();
-  // let v: vector<int>;
-  let c: vector<string>;
-  c::append("Hey !");
-  c::append("How are you ?");
-  c::append("I'm doing great !");
-  let i: int => 0;
-  while i < (c::len()) => {
-    c::at(i)::println();
-    i => i + 1;
+class <T impl any>tree => {
+  public value: T,
+  public children: vector<tree<T>*>,
+  public tree(val: T, children: vector<tree<T>*>) => {
+    print("TODO: tree\n");
+    exit(1);
   }
-  // i => 0;
-  // while i < 10000 => {
-  //   v::append(2 * i + 1);
-  //   i => i + 1;
-  // }
-  // (@as string (v::at(6540)))::println();
+}
+
+let main(): int => {
 
   return 0;
 }

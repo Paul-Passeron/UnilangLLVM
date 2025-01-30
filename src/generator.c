@@ -311,13 +311,32 @@ void generate_defer(defer_elem_t elem) {
   LLVMBuildCall2(gen->builder, ftype, fptr, args, 1, "");
 }
 
+void generate_defers2(int scope) {
+  int start_index = gen->defers.count - 1;
+  if (gen->defers.count > 0) {
+    while (start_index > 0 && gen->defers.items[start_index].scope > scope) {
+      start_index--;
+    }
+  }
+  if (start_index > 0) {
+    for (size_t i = start_index + 1; i < gen->defers.count; ++i) {
+      printf("I is %ld\n", i);
+      generate_defer(gen->defers.items[i]);
+    }
+  }
+}
+
 void generate_defers(int scope) {
+  int old_count = gen->defers.count;
   if (gen->defers.count > 0) {
     while (gen->defers.count > 0 &&
            gen->defers.items[gen->defers.count - 1].scope > scope) {
-      generate_defer(gen->defers.items[gen->defers.count - 1]);
+      // generate_defer(gen->defers.items[gen->defers.count - 1]);
       gen->defers.count--;
     }
+  }
+  for (int i = gen->defers.count; i < old_count; i++) {
+    generate_defer(gen->defers.items[i]);
   }
 }
 
@@ -366,8 +385,17 @@ type_t generate_templated_class_type(ast_t *type) {
   // types
   ast_template_t temp = type->as.type.inst_template->as.temp;
   for (size_t i = 0; i < temp.count; i++) {
-
-    get_type_from_ast(temp.tempelems[i]);
+    ast_t *arg = temp.tempelems[i];
+    // This should be the only place where we do that
+    if (arg->as.type.is_template) {
+      // for the moment, we try to see if it's self
+      char *arg_name = sv_to_cstr(arg->as.type.name.lexeme);
+      printf("arg_name: %s vs class_name: %s", arg_name, class_name);
+      EXIT;
+      free(arg_name);
+    } else {
+      get_type_from_ast(temp.tempelems[i]);
+    }
   }
   if (!cdef.is_templated) {
     // Cannot instantiate class with templated types when class is not
@@ -1164,7 +1192,9 @@ LLVMValueRef generate_binop(ast_t *binop) {
     if (glob_type.kind == CLASS) {
       LLVMValueRef ptr = get_lm_pointer(binop);
       defer_elem_t entry = {get_named_values_scope(1), glob_type, ptr};
-      add_defer(entry);
+      if (binop->as.binop.op.kind != ACCESS) {
+        add_defer(entry);
+      }
       LLVMValueRef res = LLVMBuildLoad2(gen->builder, glob_type.type, ptr, "");
       int is_new = gen->is_new;
       gen->is_new = 0;
