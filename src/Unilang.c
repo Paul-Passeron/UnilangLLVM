@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
   generate_program(prog);
   fflush(stdout);
 
-  // LLVMDumpModule(g.module);
+  LLVMDumpModule(g.module);
 
   char *error = NULL;
   if (LLVMVerifyModule(g.module, LLVMPrintMessageAction, &error)) {

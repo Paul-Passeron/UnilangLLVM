@@ -1,61 +1,7 @@
 @include std::string
-@include std::sys
-// This is the interface that accepts any type 
-interface any t => {} 
-
-class <t impl any> vector => {
-  private arr: t*,
-  private count: int,
-  private cap: int,
-  public vector() => {
-    self::count => 0;
-    self::cap => 16;
-    self::arr => malloc(self::cap * @size t);
-  },
-  public at(i: int): t => {
-    if i < (self::count) => {
-      return @new t (self::arr[i]);
-    }
-    (@as string "Could not access element at index " + i + " out of " + (self::count - 1))::println();
-    exit(1);
-  },
-  public append(elem: t): void => {
-    if self::count + 1 >= (self::cap) => {
-      self::cap => self::cap * 2;
-      let old_elems: t * => self::arr;
-      self::arr => malloc(self::cap * @size t);
-      let i: int => 0;
-      while i < (self::count) => {
-        self::arr[i] => old_elems[i];
-        i => i + 1;
-      }
-      free(old_elems);
-    } 
-    self::arr[self::count] => elem;
-    self::count => self::count + 1;
-  },
-  public destroy(): void => {
-    free(self::arr);
-    // TODO: introduce @destroy directive that 
-    // destroys value if it is a class 
-    // but does nothing otherwise 
-    // So that there can be no memory
-    // leaks when creating vectors of any 
-    // without having to manually manage the memory
-    // Maybe @destroy on a ptr can just free it as
-    // well
-    self::count => 0;
-    self::cap => 0;
-    self::arr => 0;
-  },
-  public len(): int => {
-    return self::count;
-  }
-}
+@include std::vector
 
 let main(): int => {
-  (@as string "Hello, World !")::println();
-  // let v: vector<int>;
   let c: vector<string>;
   c::append("Hey !");
   c::append("How are you ?");
@@ -65,12 +11,5 @@ let main(): int => {
     c::at(i)::println();
     i => i + 1;
   }
-  // i => 0;
-  // while i < 10000 => {
-  //   v::append(2 * i + 1);
-  //   i => i + 1;
-  // }
-  // (@as string (v::at(6540)))::println();
-
   return 0;
 }

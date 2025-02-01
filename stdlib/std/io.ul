@@ -43,6 +43,5 @@ let write(fd: int, s: char *): void => {
 }
 
 let is_ws(c: char): bool => {
-  return c = ' ' || c = '\n' || c = '\t'; 
+  return c = ' ' || c = '\n' || c = '\t';
 }
-

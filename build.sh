@@ -1,1 +1,1 @@
-pparser unilang.ppars src include unilang_parser && projman -b && ./make_stdlib.sh && ./ul.sh $1 && $1
+./ul.sh $1 && $1

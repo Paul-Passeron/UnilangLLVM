@@ -83,7 +83,7 @@ let getdents(fd: int, dirp: linux_dirent_t *, count: u32): i64 => {
 let list_directory(path: string): void => {
   print(".\n..\n");
   let s: char * => path::to_cstr();
-  let fd: int => open(path::to_cstr(), 65536, 0);
+  let fd: int => open(s, 65536, 0);
   free(s);
   let st: stat_t;
   fstat(fd, &st);

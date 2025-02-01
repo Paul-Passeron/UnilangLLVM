@@ -1,12 +1,15 @@
 function aux() {
-  set -xe 
-  projman -b
-  ./bin/Unilang $1
-  as tests/output.s -o tmp.o
-  ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib64/crt1.o /usr/lib64/crti.o -lc tmp.o /usr/lib64/crtn.o ./stdlib/lib/ul_lib.a -o $2
-  rm tmp.o
-  # ./$2
+  set -xe
+  objs=""
+  for arg in "$@"; do
+    ~/Documents/Unilang/bin/Unilang $arg.ul;
+    as tests/output.s -o $arg.o;
+    objs=$(echo "$objs $arg.o")
+  done;
+  ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib64/crt1.o /usr/lib64/crti.o -lc $objs /usr/lib64/crtn.o  ~/Documents/Unilang/stdlib/lib/ul_lib.a -o $1
+  for obj in $objs; do
+    rm $obj
+  done;
 }
 
-# ./make_stdlib.sh
-aux $1.ul $1
+aux $@

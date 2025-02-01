@@ -17,3 +17,7 @@ let memcpy(dst: char *, src: char *, n: u32): void => {
     i => i + 1;
   }
 }
+
+let lseek(fd: int, offset: int, whence: int): int => {
+  return syscall(8, fd, offset, whence);
+}

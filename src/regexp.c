@@ -429,11 +429,20 @@ char *unescape_string(const char *input) {
   for (size_t i = 0; i < len; ++i) {
     if (input[i] == '\\' && i + 1 < len) {
       switch (input[i + 1]) {
+      case '\'':
+        output[out_idx++] = '\'';
+        break;
+      case '\"':
+        output[out_idx++] = '\"';
+        break;
       case 'n':
         output[out_idx++] = '\n';
         break;
       case 't':
         output[out_idx++] = '\t';
+        break;
+      case 'e':
+        output[out_idx++] = '\e';
         break;
       case 'r':
         output[out_idx++] = '\r';

@@ -1,13 +1,8 @@
-#include <fcntl.h>
 #include <stdio.h>
-#include <sys/types.h>
-
-
+#include <unistd.h>
+#include<fcntl.h>
 
 int main(void){
-  dev_t d;
-  struct stat s;
-  
-  printf("Sizeof stat: %ld\n", 8 * sizeof( struct stat));
+  printf("O_RDONLY = %d\n", O_RDONLY);
   return 0;
 }

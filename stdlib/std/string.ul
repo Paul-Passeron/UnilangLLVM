@@ -1,6 +1,7 @@
 @include std::io
 @include std::sys
 @include std::mem
+@include std::res
 
 class string => {
   private contents: char *,
@@ -46,7 +47,7 @@ class string => {
   public string(x: int) => {
     let minus: bool => false;
     if x < 0 => {
-      minus => true; 
+      minus => true;
       x => -x;
     }
     self::len => intlen(x, 10);
@@ -104,25 +105,16 @@ class string => {
     if self::len >= (self::cap) => {
       self::cap => self::len * 2 + 1;
       self::contents => malloc(self::cap);
-      print_int(@as int (self::contents));
-      let i: int => 0;
-      while i < old_length => {
-        self::contents[i] => old_contents[i];
-        i => i + 1;
-      }
+      memcpy(self::contents, old_contents, old_length);
       free(old_contents);
     }
-    let i: int => 0;
-    while i < len => {
-      self::contents[old_length + i] => s::at(i);
-      i => i + 1;
-    }
+    memcpy(@as char *(@as int (self::contents) + old_length), s::contents, s::len());
   },
 
   public join(s: string, sep: char): void => {
     let tmp: string => sep;
     self::append(tmp);
-    self::append(s);    
+    self::append(s);
   },
 
   public destroy(): void => {
@@ -135,7 +127,8 @@ class string => {
   },
 
   public op_add(s: string): string => {
-    let s2: string => @new string self;
+    let s2: string => @new string "";
+    s2::append(self);
     s2::append(s);
     return s2;
   },
@@ -193,7 +186,7 @@ let getline(fd: int): string => {
     res::append_char(c);
     c => getchar(fd);
   }
-  return res; 
+  return res;
 }
 
 
@@ -203,5 +196,5 @@ let getcwd(): string => {
   syscall(79, buf, 1023);
   let res: string => @new string buf;
   free(buf);
-  return res;  
+  return res;
 }

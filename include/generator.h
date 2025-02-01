@@ -23,13 +23,14 @@ typedef enum typekind_t {
   CLASS,
   PTR,
   TEMPLATED,
-  ALIAS, // uses pointed_to as well but is
-         // just an alias name for the type,
-         // not a pointer.
+  ALIAS,     // uses pointed_to as well but is
+             // just an alias name for the type,
+             // not a pointer.
+             //
+  INTERFACE, // Type inside the interface,
+             // should be temporary in the type stack
+  AST,       // AST ref to type
 
-  SELF, // Used to identify templated
-        // class type inside of
-        // itself
 } typekind_t;
 
 typedef struct types {
@@ -68,6 +69,7 @@ struct type_t {
   LLVMTypeRef type;
   type_t *pointed_by;
   char *interface;
+  ast_t *ast;
 };
 
 typedef struct defer_elem_t {
@@ -179,6 +181,17 @@ typedef struct ptrs {
   size_t capacity;
 } ptrs;
 
+typedef struct template_t {
+  char *class_name;
+  ast_t *ast;
+} template_t;
+
+typedef struct templates {
+  template_t *items;
+  size_t count;
+  size_t capacity;
+} templates;
+
 typedef struct generator_t generator_t;
 struct generator_t {
   LLVMContextRef context;
@@ -188,8 +201,7 @@ struct generator_t {
   struct named_values named_values;
   struct types types;
   struct classes classes;
-  struct types temp_types;
-  struct classes classes_templates;
+  struct templates templates;
   struct function_entry_t *current_function;
   struct defers defers;
   LLVMValueRef current_ptr;
@@ -198,6 +210,7 @@ struct generator_t {
   LLVMBasicBlockRef last_bb;
   struct interfaces interfaces;
   struct inst_classes inst_classes;
+  struct strings included_files;
 };
 
 typedef struct ltypes {
@@ -228,8 +241,10 @@ void add_function(function_entry_t f);
 void add_named_value(named_value_entry_t n);
 
 LLVMValueRef generate_expression(ast_t *expr);
-LLVMValueRef generate_cast(LLVMValueRef value, type_t target_type);
-LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t target_type);
+LLVMValueRef generate_cast(LLVMValueRef value, type_t original_type,
+                           type_t target_type);
+LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t original_type,
+                                    type_t target_type);
 LLVMValueRef generate_intlit(token_t tok);
 LLVMValueRef generate_stringlit(token_t tok);
 LLVMValueRef generate_access(ast_t *access);
@@ -239,7 +254,7 @@ void generate_program(ast_t *program);
 void generate_decl(ast_t *decl);
 void generate_fundef(ast_t *fundef);
 void generate_vardef(ast_t *vardef);
-void generate_classdef_pro(ast_t *classdef, bool gen_templ);
+void generate_classdef(ast_t *classdef);
 void generate_classdef_for_include(ast_t *classdef);
 void generate_ct_cte(ast_t *ct_cte);
 
@@ -285,11 +300,27 @@ bool are_types_equal(type_t a, type_t b);
 type_t t_from_cdef(class_entry_t cdef);
 type_t sanitize_type(type_t t);
 
-type_t get_aliased_with_name(const char *name);
+type_t get_aliased_with_name(const char *name, void *ref);
 
 void print_types(void);
 type_t get_type_used_in_class(class_entry_t cdef, type_t t);
 
 type_t get_type_from_ast(ast_t *type);
+type_t get_type_from_ast_pro(ast_t *type, bool care_for_ptr);
+
+void generate_interface(ast_t *interface);
+int get_constructor_with_single_arg_matching_type(class_entry_t cdef,
+                                                  LLVMTypeRef t);
+
+bool is_integer_type(type_t t);
+
+bool does_type_exist(const char *name);
+int get_class_instance_index(const char *class_name, types ts);
+
+bool is_ast_constructor(ast_t *ast);
+void declare_constructors(class_entry_t cdef);
+void declare_methods(class_entry_t cdef);
+
+type_t add_class_templated(ast_t *classdef);
 
 #endif // GENERATOR_H
