@@ -1,12 +1,2 @@
-@include std::sys
-class <t impl any> test => {
-  public mem: t,
-  public test() => {
-    exit(1);
-  },
-}
-
-let main(): int => {
-  let t: test<int>;
-  return 0;
-}
+hey
+How are you...?

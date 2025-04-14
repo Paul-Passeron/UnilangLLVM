@@ -2325,12 +2325,16 @@ LLVMValueRef get_lm_pointer(ast_t *lm) {
   if (lm->kind == AST_FUNCALL) {
     type_t t = t_of_expr(lm);
     LLVMValueRef value = generate_funcall(lm);
-    LLVMValueRef ptr = LLVMBuildAlloca(gen->builder, type_to_llvm(t), "");
+    LLVMValueRef ptr = gen->current_ptr;
+    // if (gen->current_ptr == NULL) {
+    ptr = LLVMBuildAlloca(gen->builder, type_to_llvm(t), "");
+    // if (!gen->is_new) {
+    // defer_elem_t elem = {get_named_values_scope(0), t, ptr};
+    // add_defer(elem);
+    // }
+    // }
     LLVMBuildStore(gen->builder, value, ptr);
-    if (!gen->is_new) {
-      defer_elem_t elem = {get_named_values_scope(0), t, ptr};
-      add_defer(elem);
-    }
+
     return ptr;
   }
 
@@ -2514,10 +2518,7 @@ LLVMValueRef generate_cast_no_check(LLVMValueRef value, type_t original_type,
       if (constructor_index < 0) {
         if (are_types_equal(original_type, target_type) &&
             target_type.kind == CLASS) {
-          // No copy constructor, so let's just do nothing
-          printf("No copy constructor found for class %s\n",
-                 original_type.name);
-          EXIT;
+          return value;
         } else {
           printf("Cannot convert type ");
           print_type(original_type);
@@ -2640,7 +2641,6 @@ void generate_vardef(ast_t *vardef) {
       expr = generate_default_value_for_type(type);
     }
   } else {
-
     expr = generate_expression(vardef->as.vardef.value);
     type_t expr_t = t_of_expr(vardef->as.vardef.value);
     if (!are_types_equal(expr_t, type)) {
@@ -2689,7 +2689,6 @@ int does_method_exist(class_entry_t c, char *name) {
   }
   return -1;
 }
-
 
 class_entry_t entry_from_cdef(ast_class_t cdef) {
 

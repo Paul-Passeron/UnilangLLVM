@@ -118,12 +118,17 @@ class string => {
   },
 
   public destroy(): void => {
+
     if self::len > 0 || self::cap > 0 => {
       self::len => 0;
       self::cap => 0;
       free(self::contents);
       self::contents => 0;
     }
+  },
+
+  public reset(): void => {
+    self::len => 0;
   },
 
   public op_add(s: string): string => {
@@ -176,6 +181,14 @@ class string => {
     memcpy(res, self::contents, self::len);
     res[self::len] => 0;
     return res;
+  },
+
+  public print_color(code: int): void => {
+    print("\e[");
+    print_int(code);
+    print("m");
+    self::print();
+    print("\e[0m");
   }
 }
 
