@@ -1,0 +1,9 @@
+@include std::string
+
+let main(): int => {
+  (@as string "Hello, World !")::println();
+  let s: string => "Hello, World !";
+  s::append(" hehehe");
+  s::println();
+  return 0;
+}

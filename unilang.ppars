@@ -1,0 +1,470 @@
+{
+  #include <stdint.h>
+  #include "ast.h"
+  #include "unilang_lexer.h"
+  #include "parser_helper.h"
+}
+
+identifier: {IDENTIFIER} => {
+  token_t *ptr = %{0%};
+  ast_t *res = new_identifier(*ptr);
+  free(ptr);
+  return res;
+}
+
+intlit: {INTLIT} => {
+  token_t *ptr = %{0%};
+  ast_t *res = new_intlit(*ptr);
+  free(ptr);
+  return res;
+}
+
+floatlit: {FLOATLIT} => {
+  token_t *ptr = %{0%};
+  ast_t *res = new_floatlit(*ptr);
+  free(ptr);
+  return res;
+}
+
+charlit: {CHARLIT} => {
+  token_t *ptr = %{0%};
+  ast_t *res = new_charlit(*ptr);
+  free(ptr);
+  return res;
+}
+
+stringlit: {STRLIT} => {
+    token_t *ptr = %{0%};
+    ast_t *res = new_stringlit(*ptr);
+    free(ptr);
+    return res;
+  }
+
+boollit: 
+  | 'true' => { return new_boollit(1);}
+  | 'false' => { return new_boollit(0);}
+
+literal: 
+  | %intlit => { return %{0%}; }
+  | %floatlit => { return %{0%}; }
+  | %charlit => { return %{0%}; }
+  | %stringlit => { return %{0%}; }
+  | %boollit => { return %{0%}; }
+
+param: %identifier ':' %type => {
+  ast_t *id = %{0%};
+  ast_t *type = %{2%};
+  return new_param(id, type);
+}
+
+arglist: @list elem=%param separator=','
+
+funcallargs: @list elem=%expr separator=','
+
+size_dir:
+  | '@size' %type => {
+    return new_size_dir(%{1%});
+  }
+
+cast_like_dir: 
+  | '@as' %type %leaf => {
+    return new_as_dir(%{1%}, %{2%});
+  }
+  | '@new' %type %leaf => {
+    return new_new_dir(%{1%}, %{2%});
+  }
+
+leaf:
+  | %paren         => { return %{0%}; }
+  | %literal       => { return %{0%}; }
+  | %identifier    => { return %{0%}; }
+  | %unary         => { return %{0%}; }
+  | %cast_like_dir => { return %{0%}; }
+  | %size_dir      => { return %{0%}; }
+
+
+expr:
+  | %binop   => { return %{0%}; }
+  | %leaf    => { return %{0%}; }
+
+
+stmt: 
+  | %expr ';'     => { return %{0%}; }
+  | %compound     => { return %{0%}; }
+  | %vardef       => { return %{0%}; }
+  | %if_statement => { return %{0%}; }
+  | %while_stmt   => { return %{0%}; }
+  | %assignement  => { return %{0%}; }
+  | %return       => { return %{0%}; }
+  
+
+decl:
+  | %ct_cte       => { return %{0%}; }
+  | %include_dir  => { return %{0%}; }
+  | %fundef       => { return %{0%}; }
+  | %vardef       => { return %{0%}; }
+  | %class_decl   => { return %{0%}; }
+  | %interface    => { return %{0%}; }
+
+binop: => {
+  *worked = 1;
+  ast_t *res = parse_expression_aux(l, -1);
+  if(!res) *worked = 0;
+  return res;
+}
+
+paren: '(' %expr ')' => {
+  return %{1%};
+}
+
+starlist: @list elem='*'
+
+
+type: 
+  | %identifier %inst_template %starlist => {
+    ast_t * iden = %{0%};
+    ast_t *templ = %{1%};
+    token_t **starlist = %{2%};
+    size_t count = 0;
+    while(starlist[count]){
+      count++;
+    }
+
+    for(size_t i = 0; i < count; ++i){
+      free(starlist[i]);
+    }
+    free(starlist);
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, count, true, templ);
+  }
+  | %identifier %starlist => {
+    ast_t * iden = %{0%};
+    token_t **starlist = %{1%};
+    size_t count = 0;
+    while(starlist[count]){
+      count++;
+    }
+    for(size_t i = 0; i < count; ++i){
+      free(starlist[i]);
+    }
+    free(starlist);
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, count, false, NULL);
+  }
+  | %identifier %inst_template => {
+    ast_t *iden = %{0%};
+    ast_t *templ = %{1%};
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, 0, true, templ);
+  }
+  | %identifier => {
+    ast_t *iden = %{0%};
+    token_t tok = iden->as.identifier.tok;
+    free_ast(iden);
+    return new_type(tok, 0, false, NULL);
+  }
+  
+
+unary: %uop %leaf => {
+  token_t *ptr = %{0%};
+  ast_t *leaf = %{1%}; 
+  ast_t *res = new_unop(*ptr, leaf);
+  return res;
+}
+
+stmt_list: @list elem=%stmt
+
+compound: 
+  | '{' '}' => {
+    ast_t **res = malloc(sizeof(ast_t *));
+    *res = NULL;
+    return new_compound(res);
+  }
+  | '{' %stmt_list '}' => { return new_compound(%{1%}); }
+
+
+program_list: @list elem=%decl
+
+program: %program_list => {
+  return new_compound(%{0%});
+}
+
+tempelem: %identifier 'impl' %identifier => {
+  return new_tempelem(%{0%}, %{2%});
+}
+
+templist: @list elem=%tempelem separator=','
+
+template: 
+  | '<' %templist '>' => { return new_template(%{1%}); }
+
+
+tlist: @list elem=%type separator=','
+
+inst_template:
+  | '<' %tlist '>' => {
+    // template but the args are types and not tempelems
+    return new_template(%{1%});
+  }
+
+fundef_letless: 
+  | %identifier %template '(' %arglist ')' ':' %type '=>' %compound => {
+    ast_t *id = %{0%};
+    ast_t *type = %{6%};
+    tmp_param_t **tmp_arglist = %{3%};
+    ast_t *stmt_list = %{8%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
+  }
+  | %identifier %template '(' ')' ':' %type '=>' %compound => {
+    ast_t *id = %{0%};
+    ast_t *type = %{5%};
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *stmt_list = %{7%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
+  }
+  | %identifier '(' %arglist ')' ':' %type '=>' %compound => {
+    ast_t *id = %{0%};
+    ast_t *type = %{5%};
+    tmp_param_t **tmp_arglist = %{2%};
+    ast_t *stmt_list = %{7%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
+  }
+  | %identifier '(' ')' ':' %type '=>' %compound => {
+    ast_t *id = %{0%};
+    ast_t *type = %{4%};
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *stmt_list = %{6%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, type);
+  }
+
+fundef: 'let' %fundef_letless => { return %{1%}; }
+
+uop: 
+  | '-' => { return %{0%}; }
+  | '!' => { return %{0%}; }
+  | '$' => { return %{0%}; }
+  | '&' => { return %{0%}; }
+
+vardef_letless: 
+  | %identifier ':' %type '=>' %expr => {
+    ast_t *iden = %{0%};
+    token_t tok = iden->as.identifier.tok;
+    free(iden);
+    return new_vardef(tok, %{2%}, %{4%});
+  } 
+  | %identifier ':' %type => {
+    ast_t *iden = %{0%};
+    token_t tok = iden->as.identifier.tok;
+    free(iden);
+    return new_vardef(tok, %{2%}, NULL);
+  } 
+
+vardef: 'let' %vardef_letless ';' => { return %{1%}; }
+
+ct_cte: '@const' {IDENTIFIER} %expr ';' => {
+  token_t *iden_ptr = %{1%};
+  token_t iden = *iden_ptr;
+  free(iden_ptr);
+  ast_t *expr = %{2%};
+  return new_ct_cte(iden, expr);
+}
+
+access_spec: 
+  | 'public' => { return %{0%}; }
+  | 'private' => { return %{0%}; }
+  
+abstract_opt:
+  | 'abstract' => {
+    return %{0%};
+  }
+  | => {
+    *worked = 1;
+    (void)l;
+    return NULL;
+  }
+
+static_opt:
+  | 'static' => {
+    return %{0%};
+  }
+  | => {
+    *worked = 1;
+    (void)l;
+    return NULL;
+  }
+
+
+class_body: @list elem=%class_body_item separator=','
+
+class_constructor:
+| %identifier '(' %arglist ')' '=>' %compound => {
+    ast_t *id = %{0%};
+    tmp_param_t **tmp_arglist = %{2%};
+    ast_t *stmt_list = %{5%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, NULL);
+  }
+  | %identifier '(' ')' '=>' %compound => {
+    ast_t *id = %{0%};
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *stmt_list = %{4%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, stmt_list, NULL);
+  }
+
+class_body_item: 
+  | %abstract_opt %access_spec %static_opt %fundef_letless => {
+    token_t *access_spec_ptr = %{1%};
+    token_t access_spec = *access_spec_ptr;
+    uintptr_t abstract_opt = (uintptr_t)%{0%};
+    uintptr_t static_opt = (uintptr_t)%{2%};
+    free(access_spec_ptr);
+    free(%{0%});
+    free(%{2%});
+    ast_t *fundef = %{3%};
+    return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
+  }
+  | %abstract_opt %access_spec %static_opt %class_constructor => {
+    token_t *access_spec_ptr = %{1%};
+    token_t access_spec = *access_spec_ptr;
+    uintptr_t abstract_opt = (uintptr_t)%{0%};
+    uintptr_t static_opt = (uintptr_t)%{2%};
+    free(access_spec_ptr);
+    free(%{0%});
+    free(%{2%});
+    ast_t *fundef = %{3%};
+    return new_method(fundef, access_spec, abstract_opt != 0, static_opt != 0);
+  }
+  | %access_spec %static_opt %vardef_letless => {
+    token_t *access_spec_ptr = %{0%};
+    token_t access_spec = *access_spec_ptr;
+    free(access_spec_ptr);
+    ast_t *var = %{2%};
+    uintptr_t static_opt = (uintptr_t)%{1%};
+    int is_static = static_opt != 0;
+    free((void*)static_opt);
+    return new_member(var, access_spec, is_static);
+  }
+
+class_decl: 
+  | 'class' %template %identifier '=>' '{' %class_body '}' => {
+    ast_t *temp = %{1%};
+    ast_t *iden = %{2%};
+    token_t name = iden->as.identifier.tok;
+    free_ast(iden);
+    ast_t **body = %{5%};
+    size_t count = 0;
+    while(body[count]){
+      count++;
+    }
+    return new_class(name, count, body, temp);
+  }
+  | 'class' %identifier '=>' '{' %class_body '}' => {
+    ast_t *iden = %{1%};
+    token_t name = iden->as.identifier.tok;
+    free_ast(iden);
+    ast_t **body = %{4%};
+    size_t count = 0;
+    while(body[count]){
+      count++;
+    }
+    return new_class(name, count, body, NULL);
+  }
+
+if_statement:
+  | 'if' %expr '=>' %stmt 'else' %stmt => {
+    ast_t *cond = %{1%};
+    ast_t *stmt1 = %{3%};
+    ast_t *stmt2 = %{5%};
+    return new_if_stmt(cond, stmt1, stmt2);
+  }
+  | 'if' %expr '=>' %stmt => {
+    ast_t *cond = %{1%};
+    ast_t *stmt1 = %{3%};
+    return new_if_stmt(cond, stmt1, NULL);
+  }
+
+while_stmt: 'while' %expr '=>' %stmt => {
+  return new_while_stmt(%{1%}, %{3%});
+}
+
+assignement: %expr '=>' %expr ';' => {
+  return new_assignement(%{0%}, %{2%});
+}
+
+return: 
+  | 'return' %expr ';' => {
+    return new_return(%{1%});
+  }
+  | 'return' ';' => { return new_return(NULL); }
+
+include_dir: 
+  | '@include' %expr => { return new_include_dir(%{1%}); }
+
+
+proto:
+  | %identifier '(' %arglist ')' ':' %type => {
+    ast_t *id = %{0%};
+    ast_t *type = %{5%};
+    tmp_param_t **tmp_arglist = %{2%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, NULL, type);
+  }
+  | %identifier '(' ')' ':' %type => {
+    tmp_param_t **tmp_arglist = malloc(sizeof(void*));
+    tmp_arglist[0] = NULL;
+    ast_t *id = %{0%};
+    ast_t *type = %{4%};
+    token_t tok = id->as.identifier.tok;
+    free_ast(id);
+    return new_fundef_from_parser(tok, tmp_arglist, NULL, type);
+  }
+
+proto_list: @list elem=%proto separator=','
+
+interface: 
+  |'interface' %identifier %identifier '=>' '{' %proto_list '}' 
+  => {
+    ast_t *name_ptr = %{1%};
+    ast_t *type_ptr = %{2%};
+    token_t name = name_ptr->as.identifier.tok;
+    token_t type = type_ptr->as.identifier.tok;
+    free_ast(name_ptr);
+    free_ast(type_ptr);
+    ast_t **protos =%{5%};
+    size_t protos_count = 0;
+    while(protos[protos_count]){
+      protos_count++;
+    }
+    return new_interface(type, name, protos, protos_count); 
+  }
+  |'interface' %identifier %identifier '=>' '{' '}' 
+  => {
+    ast_t *name_ptr = %{1%};
+    ast_t *type_ptr = %{2%};
+    token_t name = name_ptr->as.identifier.tok;
+    token_t type = type_ptr->as.identifier.tok;
+    free_ast(name_ptr);
+    free_ast(type_ptr);
+    ast_t **protos = malloc(sizeof(void*));
+    protos[0] = NULL;
+    size_t protos_count = 0;
+    return new_interface(type, name, protos, protos_count); 
+  }

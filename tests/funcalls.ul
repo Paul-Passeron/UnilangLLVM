@@ -1,0 +1,7 @@
+let foo(): i32 => {
+  return 7;
+}
+
+let bar(): i32 => {
+  return foo() * 2;
+}

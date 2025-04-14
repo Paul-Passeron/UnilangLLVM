@@ -1,0 +1,15 @@
+@include std::string
+@include std::vector
+
+let main(): int => {
+  let c: vector<string>;
+  c::append("Hey !");
+  c::append("How are you ?");
+  c::append("I'm doing great !");
+  let i: int => 0;
+  while i < (c::len()) => {
+    c::at(i)::println();
+    i => i + 1;
+  }
+  return 0;
+}

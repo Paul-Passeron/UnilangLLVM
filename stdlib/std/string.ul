@@ -1,0 +1,213 @@
+@include std::io
+@include std::sys
+@include std::mem
+@include std::res
+
+class string => {
+  private contents: char *,
+  private len: int,
+  private cap: int,
+  public string(s: string) => {
+    self::len => s::len();
+    self::cap => self::len * 2 + 1;
+    self::contents => malloc(self::cap);
+    let i: int => 0;
+    while i < self::len => {
+      self::contents[i] => s::at(i);
+      i => i + 1;
+    }
+  },
+
+  public string(b: bool) => {
+    let s: char *;
+    if b => s => "true";
+    else s => "false";
+    // TODO: change syntax for this
+    self[0] => @new string s;
+  },
+
+  public string(s: char *) => {
+    self::len => strlen(s);
+    self::cap => self::len * 2 + 1;
+    self::contents => malloc(self::cap);
+    let i: int => 0;
+    while i < self::len => {
+      self::contents[i] => s[i];
+      i => i + 1;
+    }
+  },
+
+  public string(c: char) => {
+    self::len => 1;
+    self::cap => 16;
+    self::contents => malloc(self::cap);
+    self::contents[0] => c;
+  },
+
+  public string(x: int) => {
+    let minus: bool => false;
+    if x < 0 => {
+      minus => true;
+      x => -x;
+    }
+    self::len => intlen(x, 10);
+    if minus => {
+      self::len => self::len + 1;
+    }
+    self::cap => self::len * 2 + 1;
+    self::contents => malloc(self::cap);
+    let i: int => self::len - 1;
+    if x = 0 => self::contents[0] => '0';
+    if minus => self::contents[0] => '-';
+    while x > 0 => {
+      self::contents[i] => x % 10 + '0';
+      x => x / 10;
+      i => i - 1;
+    }
+  },
+
+  public print(): void => {
+    if self::len > 0 =>
+    syscall(1, 1, self::contents, self::len);
+  },
+
+  public println(): void => {
+    self::print();
+    printc(10);
+  },
+
+  public append_char(c: char): void => {
+    if self::len + 1 > self::cap => {
+      self::append(c);
+    } else {
+      self::contents[self::len] => c;
+      self::len => self::len + 1;
+    }
+  },
+
+  public len(): int => {
+    return self::len;
+  },
+
+  public at(i: int): char => {
+    if (i < 0) || (i >= self::len) => {
+      ((@as string "string::at: index out of bounds ") + i + " of " + (self::len))::println();
+      return 0;
+    }
+    return self::contents[i];
+  },
+
+  public append(s: string): void => {
+    let old_contents: char * => self::contents;
+    let old_length: int => self::len;
+    let len: int => s::len();
+    self::len => len + old_length;
+    if self::len >= (self::cap) => {
+      self::cap => self::len * 2 + 1;
+      self::contents => malloc(self::cap);
+      memcpy(self::contents, old_contents, old_length);
+      free(old_contents);
+    }
+    memcpy(@as char *(@as int (self::contents) + old_length), s::contents, s::len());
+  },
+
+  public join(s: string, sep: char): void => {
+    let tmp: string => sep;
+    self::append(tmp);
+    self::append(s);
+  },
+
+  public destroy(): void => {
+
+    if self::len > 0 || self::cap > 0 => {
+      self::len => 0;
+      self::cap => 0;
+      free(self::contents);
+      self::contents => 0;
+    }
+  },
+
+  public reset(): void => {
+    self::len => 0;
+  },
+
+  public op_add(s: string): string => {
+    let s2: string => @new string "";
+    s2::append(self);
+    s2::append(s);
+    return s2;
+  },
+
+  public op_eq(s: string): bool => {
+    if self::len != (s::len()) => return false;
+    let i: int => 0;
+    while i < self::len => {
+      if self::at(i) != (s::at(i)) => return false;
+      i => i + 1;
+    }
+    return true;
+  },
+
+  public starts_with(s: string): bool => {
+    let l: int => s::len();
+    if l > self::len => return false;
+    let i: int => 0;
+    while i < l => {
+      if self::at(i) != (s::at(i)) => return false;
+      i => i + 1;
+    }
+    return true;
+  },
+
+  public skip(n: int): void => {
+    if n <= 0 => return;
+    self::len => self::len - n;
+    let j: int => 0;
+    while j < self::len => {
+      self::contents[j] => self::contents[j + n];
+      j => j + 1;
+    }
+  },
+
+  public skip_whitespace(): void => {
+    let i: int => 0;
+    while i < self::len && (is_ws(self::at(i))) =>
+      i => i + 1;
+    self::skip(i);
+  },
+
+  public to_cstr(): char * => {
+    let res: char * => malloc(self::len + 1);
+    memcpy(res, self::contents, self::len);
+    res[self::len] => 0;
+    return res;
+  },
+
+  public print_color(code: int): void => {
+    print("\e[");
+    print_int(code);
+    print("m");
+    self::print();
+    print("\e[0m");
+  }
+}
+
+let getline(fd: int): string => {
+  let res: string => @new string "";
+  let c: char => getchar(fd);
+  while c != '\n' && c => {
+    res::append_char(c);
+    c => getchar(fd);
+  }
+  return res;
+}
+
+
+let getcwd(): string => {
+  // TODO: put buf on the stack
+  let buf: char * => malloc(1024);
+  syscall(79, buf, 1023);
+  let res: string => @new string buf;
+  free(buf);
+  return res;
+}

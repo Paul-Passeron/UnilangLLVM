@@ -1,0 +1,1856 @@
+{
+  "kind": "AST_COMPOUND",
+  "content": [
+    {
+      "kind": "AST_INCLUDE_DIR",
+      "included": {
+        "kind": "AST_BINOP",
+        "operator": "::",
+        "lhs": {
+          "kind": "AST_IDENTIFIER",
+          "value": "std"
+        },
+        "rhs": {
+          "kind": "AST_IDENTIFIER",
+          "value": "io"
+        }
+      }
+    },
+    {
+      "kind": "AST_CLASS",
+      "name": "string",
+      "fields": [
+        {
+          "kind": "AST_MEMBER",
+          "static": "false",
+          "specifier": "private",
+          "var": {
+            "kind": "AST_VARDEF",
+            "name": "contents",
+            "type": "char*",
+            "value": null
+          }
+        },
+        {
+          "kind": "AST_MEMBER",
+          "static": "false",
+          "specifier": "private",
+          "var": {
+            "kind": "AST_VARDEF",
+            "name": "len",
+            "type": "int",
+            "value": null
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "string",
+            "params": [
+              {
+                "name": "s",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "s"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    },
+                    "args": []
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "contents"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "malloc"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "len"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "i",
+                  "type": "int",
+                  "value": {
+                    "kind": "AST_INTLIT",
+                    "value": "0"
+                  }
+                },
+                {
+                  "kind": "AST_WHILE",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": "<",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "i"
+                    },
+                    "rhs": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "self"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "contents"
+                            }
+                          },
+                          "index": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_FUNCALL",
+                          "called": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "s"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "at"
+                            }
+                          },
+                          "args": [
+                            {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "i"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "i"
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "+",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          },
+                          "rhs": {
+                            "kind": "AST_INTLIT",
+                            "value": "1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "string",
+            "params": [
+              {
+                "name": "b",
+                "type": "bool"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "s",
+                  "type": "char*",
+                  "value": null
+                },
+                {
+                  "kind": "AST_IFSTMT",
+                  "cond": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "b"
+                  },
+                  "if": {
+                    "kind": "AST_ASSIGN",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "s"
+                    },
+                    "rhs": {
+                      "kind": "AST_STRINGLIT",
+                      "value": "true"
+                    }
+                  },
+                  "else": {
+                    "kind": "AST_ASSIGN",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "s"
+                    },
+                    "rhs": {
+                      "kind": "AST_STRINGLIT",
+                      "value": "false"
+                    }
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_INTLIT",
+                    "value": "0"
+                  }
+                },
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "append"
+                    }
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "s"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "string",
+            "params": [
+              {
+                "name": "s",
+                "type": "char*"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "strlen"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "s"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "contents"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "malloc"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "len"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "i",
+                  "type": "int",
+                  "value": {
+                    "kind": "AST_INTLIT",
+                    "value": "0"
+                  }
+                },
+                {
+                  "kind": "AST_WHILE",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": "<",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "i"
+                    },
+                    "rhs": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    }
+                  },
+                  "body": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "self"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "contents"
+                            }
+                          },
+                          "index": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "s"
+                          },
+                          "index": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "i"
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "+",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          },
+                          "rhs": {
+                            "kind": "AST_INTLIT",
+                            "value": "1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "string",
+            "params": [
+              {
+                "name": "c",
+                "type": "char"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_INTLIT",
+                    "value": "1"
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "contents"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "malloc"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_INTLIT",
+                        "value": "1"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_INDEX",
+                    "subscripted": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "contents"
+                      }
+                    },
+                    "index": {
+                      "kind": "AST_INTLIT",
+                      "value": "0"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "c"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "string",
+            "params": [
+              {
+                "name": "x",
+                "type": "int"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "intlen"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "x"
+                      },
+                      {
+                        "kind": "AST_INTLIT",
+                        "value": "10"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "contents"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "malloc"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "len"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "i",
+                  "type": "int",
+                  "value": {
+                    "kind": "AST_BINOP",
+                    "operator": "-",
+                    "lhs": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    },
+                    "rhs": {
+                      "kind": "AST_INTLIT",
+                      "value": "1"
+                    }
+                  }
+                },
+                {
+                  "kind": "AST_IFSTMT",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": "=",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "x"
+                    },
+                    "rhs": {
+                      "kind": "AST_INTLIT",
+                      "value": "0"
+                    }
+                  },
+                  "if": {
+                    "kind": "AST_ASSIGN",
+                    "lhs": {
+                      "kind": "AST_INDEX",
+                      "subscripted": {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "contents"
+                        }
+                      },
+                      "index": {
+                        "kind": "AST_INTLIT",
+                        "value": "0"
+                      }
+                    },
+                    "rhs": {
+                      "kind": "AST_CHARLIT",
+                      "value": "'0'"
+                    }
+                  },
+                  "else": null
+                },
+                {
+                  "kind": "AST_WHILE",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": ">",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "x"
+                    },
+                    "rhs": {
+                      "kind": "AST_INTLIT",
+                      "value": "0"
+                    }
+                  },
+                  "body": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "self"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "contents"
+                            }
+                          },
+                          "index": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "+",
+                          "lhs": {
+                            "kind": "AST_BINOP",
+                            "operator": "%",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "x"
+                            },
+                            "rhs": {
+                              "kind": "AST_INTLIT",
+                              "value": "10"
+                            }
+                          },
+                          "rhs": {
+                            "kind": "AST_CHARLIT",
+                            "value": "'0'"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "x"
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "/",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "x"
+                          },
+                          "rhs": {
+                            "kind": "AST_INTLIT",
+                            "value": "10"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "i"
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "-",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          },
+                          "rhs": {
+                            "kind": "AST_INTLIT",
+                            "value": "1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "print",
+            "return_type": "void",
+            "params": [],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_IFSTMT",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": ">",
+                    "lhs": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    },
+                    "rhs": {
+                      "kind": "AST_INTLIT",
+                      "value": "0"
+                    }
+                  },
+                  "if": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "syscall"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_INTLIT",
+                        "value": "1"
+                      },
+                      {
+                        "kind": "AST_INTLIT",
+                        "value": "1"
+                      },
+                      {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "contents"
+                        }
+                      },
+                      {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "len"
+                        }
+                      }
+                    ]
+                  },
+                  "else": null
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "println",
+            "return_type": "void",
+            "params": [],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "print"
+                    }
+                  },
+                  "args": []
+                },
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "printc"
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_INTLIT",
+                      "value": "10"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "len",
+            "return_type": "int",
+            "params": [],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_RETURN",
+                  "expr": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "at",
+            "return_type": "char",
+            "params": [
+              {
+                "name": "i",
+                "type": "int"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_IFSTMT",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": "||",
+                    "lhs": {
+                      "kind": "AST_BINOP",
+                      "operator": "<",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "i"
+                      },
+                      "rhs": {
+                        "kind": "AST_INTLIT",
+                        "value": "0"
+                      }
+                    },
+                    "rhs": {
+                      "kind": "AST_BINOP",
+                      "operator": ">=",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "i"
+                      },
+                      "rhs": {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "len"
+                        }
+                      }
+                    }
+                  },
+                  "if": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_FUNCALL",
+                        "called": {
+                          "kind": "AST_BINOP",
+                          "operator": "::",
+                          "lhs": {
+                            "kind": "AST_BINOP",
+                            "operator": "+",
+                            "lhs": {
+                              "kind": "AST_BINOP",
+                              "operator": "+",
+                              "lhs": {
+                                "kind": "AST_BINOP",
+                                "operator": "+",
+                                "lhs": {
+                                  "kind": "AST_AS_DIR",
+                                  "type": "string",
+                                  "expr": {
+                                    "kind": "AST_STRINGLIT",
+                                    "value": "string::at: index out of bounds "
+                                  }
+                                },
+                                "rhs": {
+                                  "kind": "AST_IDENTIFIER",
+                                  "value": "i"
+                                }
+                              },
+                              "rhs": {
+                                "kind": "AST_STRINGLIT",
+                                "value": " of "
+                              }
+                            },
+                            "rhs": {
+                              "kind": "AST_BINOP",
+                              "operator": "::",
+                              "lhs": {
+                                "kind": "AST_IDENTIFIER",
+                                "value": "self"
+                              },
+                              "rhs": {
+                                "kind": "AST_IDENTIFIER",
+                                "value": "len"
+                              }
+                            }
+                          },
+                          "rhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "println"
+                          }
+                        },
+                        "args": []
+                      },
+                      {
+                        "kind": "AST_RETURN",
+                        "expr": {
+                          "kind": "AST_INTLIT",
+                          "value": "0"
+                        }
+                      }
+                    ]
+                  },
+                  "else": null
+                },
+                {
+                  "kind": "AST_RETURN",
+                  "expr": {
+                    "kind": "AST_INDEX",
+                    "subscripted": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "contents"
+                      }
+                    },
+                    "index": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "i"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "append",
+            "return_type": "void",
+            "params": [
+              {
+                "name": "s",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "old_contents",
+                  "type": "char*",
+                  "value": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "contents"
+                    }
+                  }
+                },
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "old_length",
+                  "type": "int",
+                  "value": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  }
+                },
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "len",
+                  "type": "int",
+                  "value": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "s"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    },
+                    "args": []
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "+",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "old_length"
+                    }
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "contents"
+                    }
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "malloc"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_BINOP",
+                        "operator": "::",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "self"
+                        },
+                        "rhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "len"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "i",
+                  "type": "int",
+                  "value": {
+                    "kind": "AST_INTLIT",
+                    "value": "0"
+                  }
+                },
+                {
+                  "kind": "AST_WHILE",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": "<",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "i"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "old_length"
+                    }
+                  },
+                  "body": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "self"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "contents"
+                            }
+                          },
+                          "index": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "old_contents"
+                          },
+                          "index": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          }
+                        }
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "i"
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "+",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          },
+                          "rhs": {
+                            "kind": "AST_INTLIT",
+                            "value": "1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "i"
+                  },
+                  "rhs": {
+                    "kind": "AST_INTLIT",
+                    "value": "0"
+                  }
+                },
+                {
+                  "kind": "AST_WHILE",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": "<",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "i"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "len"
+                    }
+                  },
+                  "body": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_INDEX",
+                          "subscripted": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "self"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "contents"
+                            }
+                          },
+                          "index": {
+                            "kind": "AST_BINOP",
+                            "operator": "+",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "old_length"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "i"
+                            }
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_FUNCALL",
+                          "called": {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "s"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "at"
+                            }
+                          },
+                          "args": [
+                            {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "i"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "i"
+                        },
+                        "rhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "+",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "i"
+                          },
+                          "rhs": {
+                            "kind": "AST_INTLIT",
+                            "value": "1"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "free"
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "old_contents"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "join",
+            "return_type": "void",
+            "params": [
+              {
+                "name": "s",
+                "type": "string"
+              },
+              {
+                "name": "sep",
+                "type": "char"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "tmp",
+                  "type": "string",
+                  "value": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "sep"
+                  }
+                },
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "append"
+                    }
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "tmp"
+                    }
+                  ]
+                },
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "self"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "append"
+                    }
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "s"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "destroy",
+            "return_type": "void",
+            "params": [],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_IFSTMT",
+                  "cond": {
+                    "kind": "AST_BINOP",
+                    "operator": ">",
+                    "lhs": {
+                      "kind": "AST_BINOP",
+                      "operator": "::",
+                      "lhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "self"
+                      },
+                      "rhs": {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "len"
+                      }
+                    },
+                    "rhs": {
+                      "kind": "AST_INTLIT",
+                      "value": "0"
+                    }
+                  },
+                  "if": {
+                    "kind": "AST_COMPOUND",
+                    "content": [
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "::",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "self"
+                          },
+                          "rhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "len"
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_INTLIT",
+                          "value": "0"
+                        }
+                      },
+                      {
+                        "kind": "AST_FUNCALL",
+                        "called": {
+                          "kind": "AST_IDENTIFIER",
+                          "value": "free"
+                        },
+                        "args": [
+                          {
+                            "kind": "AST_BINOP",
+                            "operator": "::",
+                            "lhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "self"
+                            },
+                            "rhs": {
+                              "kind": "AST_IDENTIFIER",
+                              "value": "contents"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "kind": "AST_ASSIGN",
+                        "lhs": {
+                          "kind": "AST_BINOP",
+                          "operator": "::",
+                          "lhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "self"
+                          },
+                          "rhs": {
+                            "kind": "AST_IDENTIFIER",
+                            "value": "contents"
+                          }
+                        },
+                        "rhs": {
+                          "kind": "AST_INTLIT",
+                          "value": "0"
+                        }
+                      }
+                    ]
+                  },
+                  "else": null
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "AST_METHOD",
+          "abstract": "false",
+          "static": "false",
+          "specifier": "public",
+          "fun": {
+            "kind": "AST_FUNDEF",
+            "name": "op_add",
+            "return_type": "string",
+            "params": [
+              {
+                "name": "s",
+                "type": "string"
+              }
+            ],
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_VARDEF",
+                  "name": "s2",
+                  "type": "string",
+                  "value": {
+                    "kind": "UNKNOWN_KIND"
+                  }
+                },
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "s2"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "append"
+                    }
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "s"
+                    }
+                  ]
+                },
+                {
+                  "kind": "AST_RETURN",
+                  "expr": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "s2"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "AST_FUNDEF",
+      "name": "getline",
+      "return_type": "string",
+      "params": [
+        {
+          "name": "fd",
+          "type": "int"
+        }
+      ],
+      "body": {
+        "kind": "AST_COMPOUND",
+        "content": [
+          {
+            "kind": "AST_VARDEF",
+            "name": "res",
+            "type": "string",
+            "value": {
+              "kind": "UNKNOWN_KIND"
+            }
+          },
+          {
+            "kind": "AST_VARDEF",
+            "name": "c",
+            "type": "char",
+            "value": {
+              "kind": "AST_FUNCALL",
+              "called": {
+                "kind": "AST_IDENTIFIER",
+                "value": "getchar"
+              },
+              "args": [
+                {
+                  "kind": "AST_IDENTIFIER",
+                  "value": "fd"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "AST_WHILE",
+            "cond": {
+              "kind": "AST_BINOP",
+              "operator": "&&",
+              "lhs": {
+                "kind": "AST_BINOP",
+                "operator": "!=",
+                "lhs": {
+                  "kind": "AST_IDENTIFIER",
+                  "value": "c"
+                },
+                "rhs": {
+                  "kind": "AST_CHARLIT",
+                  "value": "'\n'"
+                }
+              },
+              "rhs": {
+                "kind": "AST_IDENTIFIER",
+                "value": "c"
+              }
+            },
+            "body": {
+              "kind": "AST_COMPOUND",
+              "content": [
+                {
+                  "kind": "AST_FUNCALL",
+                  "called": {
+                    "kind": "AST_BINOP",
+                    "operator": "::",
+                    "lhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "res"
+                    },
+                    "rhs": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "append"
+                    }
+                  },
+                  "args": [
+                    {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "c"
+                    }
+                  ]
+                },
+                {
+                  "kind": "AST_ASSIGN",
+                  "lhs": {
+                    "kind": "AST_IDENTIFIER",
+                    "value": "c"
+                  },
+                  "rhs": {
+                    "kind": "AST_FUNCALL",
+                    "called": {
+                      "kind": "AST_IDENTIFIER",
+                      "value": "getchar"
+                    },
+                    "args": [
+                      {
+                        "kind": "AST_IDENTIFIER",
+                        "value": "fd"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "kind": "AST_RETURN",
+            "expr": {
+              "kind": "AST_IDENTIFIER",
+              "value": "res"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

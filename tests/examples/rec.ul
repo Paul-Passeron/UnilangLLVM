@@ -1,0 +1,15 @@
+let printc(c: char): void => {
+  syscall(1, 1, &c, 1);
+}
+
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  printc(x % 10 + '0');
+}
+
+let main(): int => {
+  print_int(123456);
+  printc('\n');
+  return 1;
+}

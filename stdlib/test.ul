@@ -1,0 +1,145 @@
+@include std::sys
+@include std::string
+
+
+/*
+* This is a minimalist shell to display the language's features
+*/
+
+class timespec_t => {
+  public tv_nsec: i64,
+  public tv_sec: i64,
+  public timespec_t() => {}
+}
+
+class stat_t => {
+  public st_dev: u64,
+  public st_ino: u64,
+  public st_mode: u32,
+  public st_nlink: u64,
+  public st_uid: u32,
+  public st_git: u32,
+  public st_rdev: u64,
+  public st_size: i64,
+  public st_blksize: i64,
+  public st_blocks: i64,
+  public st_atime: timespec_t,
+  public st_mtime: timespec_t,
+  public st_ctime: timespec_t,
+  private padding: u64,
+  private padding: u64,
+  public stat_t() => {}
+}
+
+class linux_dirent_t => {
+  public d_ino: u64,
+  public d_off: u64,
+  public d_reclen: u16,
+  public filename: char *,
+  public pad: char,
+  public d_type: char,
+  public linux_dirent_t() => {}
+}
+
+let fstat(fd: int, st: stat_t *): int => {
+  return syscall(5, fd, st);
+}
+
+let chdir(s: string): int => {
+  let l: int => s::len();
+  let path: char * => malloc(l + 1);
+  let i: int => 0;
+  while i < l => {
+    path[i] => s::at(i);
+    i => i + 1;
+  }
+  path[l] => 0;
+  let n: int => syscall(80, path);
+  free(path);
+  return n;
+}
+
+let display_message(): void => {
+  print("This is a small shell written in Unilang to display the power of the language !\n");
+}
+
+let display_help(): void => {
+  print("You can try some of the following commands:\n");
+  print("\t- cd <path>  : Change the current directory to <path>\n");
+  print("\t- help       : Display this message.\n");
+  print("\t- q          : Quit the shell.\n");
+}
+
+let is_command(s: string, command: string): bool => {
+  let try: string => command + " ";
+  return s::starts_with(try) || s = command;
+}
+
+let getdents(fd: int, dirp: linux_dirent_t *, count: u32): i64 => {
+  return syscall(78, fd, dirp, count);
+}
+
+
+let list_directory(path: string): void => {
+  print(".\n..\n");
+  let s: char * => path::to_cstr();
+  let fd: int => open(s, 65536, 0);
+  free(s);
+  let st: stat_t;
+  fstat(fd, &st);
+  ((@as string "The size is ") + @as int (st::st_size))::println();
+  close(fd);
+  // (@as string "The size of linux_dirent_t is " + @as int @size linux_dirent_t)::println();
+  let buffsize: u32 => 16 * @size linux_dirent_t;
+  let dirents: linux_dirent_t * => malloc(buffsize);
+  let res: int => getdents(fd, dirents, buffsize);
+  if res < 0 => {
+    (@as string "Error: could not read dir: " + res + "!")::println();
+    exit(1);
+  } else {
+    (@as string "Dirents returned " + res)::println();
+  }
+  free(dirents);
+}
+
+let main(): int => {
+  let s: string => "";
+  let path: string => getcwd();
+  while true => {
+    path::print();
+    print(" >>> ");
+    s => getline(0);
+    if s = "q" => {
+      print("Quitting...\n");
+      s::destroy();
+      return 0;
+    }
+    if is_command(s, "help") || (is_command(s, "h")) => {
+      display_message();
+      display_help();
+    }
+    else if s::starts_with("cd ") => {
+      s::skip(2);
+      s::skip_whitespace();
+      if chdir(s) => {
+        print("No such directory: ");
+        s::println();
+      } else {
+        path::destroy();
+        path => getcwd();
+      }
+    } else if is_command(s, "ls") => {
+      // TODO: parse the args
+      list_directory(path);
+    }
+    else {
+      print("'");
+      s::print();
+      print("' is not a valid command.\n");
+      display_help();
+    }
+    s::destroy();
+  }
+  path::destroy();
+  return 0;
+}

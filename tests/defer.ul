@@ -1,0 +1,36 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let print(s: char *): void => {
+  syscall(1, 1, s, strlen(s));
+}
+
+class foo => {
+  private tab: int *,
+  public foo(x: int) => {
+    self::tab => malloc(4);
+    self::tab[0] => x;
+  },
+  public foo(f: foo) => {
+    print("copy constructor called\n");
+    self::tab => malloc(4);
+    self::tab[0] => f::tab[0];
+  },
+  public destroy(): void => {
+    print("Destroying foo...\n");
+    free(self::tab);
+  }
+}
+
+let main(): int => {
+  let f1: foo => @new foo 15; // should not be destroyed automatically
+  let f2: foo => 15;          // should be destroyed
+  let f3: foo => @as foo f1;  // should be destroyed
+  let f4: foo => f1;          // should not be destroyed
+  let f5: foo => f2;          // should not be destroyed
+  f1::destroy();
+  return 0;
+}

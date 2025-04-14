@@ -1,0 +1,14 @@
+class foo => {
+  public foo(s: char *) => { }
+}
+
+class bar => {
+  public bar(x: int) => {},
+  public b(f: foo): void => {
+  }
+}
+
+let main(): int => {
+  (@as bar 5)::b("test");
+  return 0;
+}

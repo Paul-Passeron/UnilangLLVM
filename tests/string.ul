@@ -1,0 +1,161 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let intlen(n: int, b: int): int => {
+  let a: int => n / b;
+  if a => return intlen(a, b) + 1;
+  return 1;
+}
+
+let print(s: char *): void => {
+  syscall(1, 1, s, strlen(s));
+}
+
+let printc(c: char): void => {
+  syscall(1, 1, &c, 1);
+}
+
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  printc(x % 10 + 48);
+}
+
+let nl(): void => {
+  printc(10);
+}
+
+let print_iob_message(i: int, max: int): void => {
+  print("string::at: index out of bounds ");
+  print_int(i);
+  print(" of ");
+  print_int(max);
+  printc(10);
+}
+
+class string => {
+  private contents: char *,
+  private len: int,
+
+  public string(s: string) => {
+    self::len => s::len();
+    self::contents => malloc(self::len);
+    let i: int => 0;
+    while i < self::len => {
+      self::contents[i] => s::at(i);
+      i => i + 1;
+    }
+  },
+
+  public string(s: char *) => {
+    self::len => strlen(s);
+    self::contents => malloc(self::len);
+    let i: int => 0;
+    while i < self::len => {
+      self::contents[i] => s[i];
+      i => i + 1;
+    }
+  },
+
+  public string(c: char) => {
+    self::len => 1;
+    self::contents => malloc(1);
+    self::contents[0] => c;
+  },
+
+  public string(x: int) => {
+    self::len => intlen(x, 10);
+    self::contents => malloc(self::len);
+    let i: int => self::len - 1;
+    if x = 0 => self::contents[0] => '0';
+    while x > 0 => {
+      self::contents[i] => x % 10 + '0';
+      x => x / 10;
+      i => i - 1;
+    }
+  },
+
+  public print(): void => {
+    syscall(1, 1, self::contents, self::len);
+  },
+
+  public println(): void => {
+    self::print();
+    printc(10);
+  },
+
+  public len(): int => {
+    return self::len;
+  },
+
+  public at(i: int): char => {
+    if (i < 0) || (i >= self::len) => {
+      print_iob_message(i, self::len);
+      return 0;
+    }
+    return self::contents[i];
+  },
+
+  public append(s: string): void => {
+    let old_contents: char * => self::contents;
+    let old_length: int => self::len;
+    let len: int => s::len();
+    self::len => len + old_length;
+    self::contents => malloc(self::len);
+    let i: int => 0;
+    while i < old_length => {
+      self::contents[i] => old_contents[i];
+      i => i + 1;
+    }
+    i => 0;
+
+    while i < len => {
+      self::contents[old_length + i] => s::at(i);
+      i => i + 1;
+    }
+    free(old_contents);
+  },
+
+  public join(s: string, sep: char): void => {
+    let tmp: string => sep;
+    self::append(tmp);
+    self::append(s);    
+  },
+
+  public destroy(): void => {
+    print("Destroying\n");
+    if self::len = 0 => return;
+    self::len => 0;
+    free(self::contents);
+    self::contents => 0;
+  },
+
+  public op_add(s: string): string => {
+    let s2: string => @new string (self);
+    s2::append(s);
+    return s2;
+  }
+}
+
+let getline()
+
+let main(): int => {
+  let s: string => "Hello, ";
+  let s2: string => "World !";
+  s::append(s2);
+  s::append(" whattt");
+  s::println();
+  (@as string 123456)::println();
+  let leaker: string => @new string "Am I leaking ?";
+  leaker::println();
+  (@as string "Not for long")::println();
+  leaker::destroy();
+  let s3: string => " World !";
+  ((@as string "Hello") + 5)::println();
+  let a: string => "Hello";
+  (a + " World")::println();
+  return 0;
+}

@@ -1,0 +1,48 @@
+@include std::string
+
+interface printable t => {
+  print(): void,
+}
+
+class <t impl printable> printer_wrapper => {
+  private mem: t,
+  public printer_wrapper(x: t) => {
+    self::mem => @new t x;
+  },
+  public print(): void => {
+    print("(");
+    self::mem::print();
+    print(")");
+  },
+  public destroy(): void => {
+    self::mem::destroy();
+  }
+}
+
+// notice that printer_wrapper implements printable
+
+class foo => {
+  private m: int,
+
+  public foo() => { self::m => 654; },
+
+  public foo(f: foo) => { self::m => f::m; },
+
+  public print(): void => {
+    (@as string "from foo: " + self::m)::print();
+  },
+
+  public destroy(): void => { }
+
+}
+
+let main(): int => {
+  let f: foo;
+  let p: printer_wrapper<foo> => f;
+  let p2: printer_wrapper<printer_wrapper<foo>> => p;
+  p::print();
+  nl();
+  p2::print();
+  nl();
+  return 0;
+}

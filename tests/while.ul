@@ -1,0 +1,73 @@
+let strlen(s: char *): int => {
+  let res: int => 0;
+  while s[res] => res => res + 1;
+  return res;
+}
+
+let print(s: char *): void => {
+  let len: int => strlen(s);
+  syscall(1, 1, s, len);
+}
+
+let printc(c: char): void => {
+  syscall(1, 1, &c, 1);
+}
+
+let print_int(x: int): void => {
+  let a: int => x / 10;
+  if a => print_int(a);
+  printc(x % 10 + 48);
+}
+
+
+class string => {
+  public contents: char *,
+  public string(s: char *) => {
+    self::contents => s;
+  },
+  public string(b: bool) => {
+    if b => self::contents => "true";
+    else self::contents => "false";
+  },
+  public string(i: int) => {
+    self::contents => "number";
+  },
+  public string() => {
+    self::contents => "";
+  },
+  public print(): void => {
+    print(self::contents);
+  },
+  public println(): void => {
+    self::print();
+    printc(10);
+  }
+}
+
+
+let nl(): void => {
+  printc(10);
+}
+
+let array_test(n: int): void => {
+  let arr: int * => malloc(4 * n);
+  let i: int => 0;
+  while i < n => {
+    arr[i] => i * i;
+    i => i + 1;
+  }
+  i => 0;
+  while i < n => {
+    if i > 0 => print(", ");
+    print_int(arr[i]);
+    i => i + 1;
+  }
+  nl();
+  free(arr);
+  return;
+}
+
+let main(): int => {
+  array_test(20);
+  return 0;
+}

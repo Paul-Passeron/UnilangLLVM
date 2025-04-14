@@ -1,0 +1,21 @@
+class string => {
+  private contents: char *,
+  public string(s: char *) => {
+    if true => put_string("Should see this\n");
+    else put_string("Should not see this\n");
+    self::contents => s;
+  },
+  public print(): void => {
+    put_string(self::contents);
+  },
+  public println(): void => {
+    self::print();
+    put_character(10);
+  }
+}
+
+let main(): int => {
+  let s: string => "Hello, World !";
+  s::println();
+  return 0;
+}
